@@ -220,23 +220,21 @@ class Backups(object):
         c.fill()
 
     def _render_date_labels(self, c):
-        # TODO better would be to start at the right and work back
-        # - then you get the label for the most recent day
         c.set_source_rgb(*self.fg)
         x=self.host_width+self.volume_width
         y=self.rows_height+self.ypad
-        limit=0
-        for o in range(self.min_ordinal, self.max_ordinal+1):
-            if x >= limit:
+        limit=self.total_width
+        for o in range(self.max_ordinal, self.min_ordinal-1, -1):
+            x=self.days_start+(o-self.min_ordinal)*self.day_width
+            if x <= limit:
                 d=date.fromordinal(o)
                 i,e=self._text_extent(c, d.isoformat())
-                if x+e[2] >= self.total_width:
-                    return
-                self._text(c, x, y, d.isoformat())
-                c.rectangle(x,y-self.ypad,self.day_width, self.ypad)
+                w=e[2]
+                self._text(c, x-w, y, d.isoformat())
+                c.rectangle(x, y-self.ypad,
+                            self.day_width, self.ypad)
                 c.fill()
-                limit=x+e[2]+self.xpad
-            x+=self.day_width
+                limit=x-w-self.xpad
 
     def _render_backups(self, c):
         # TODO some kind of legend for the backups wouldn't go amiss
