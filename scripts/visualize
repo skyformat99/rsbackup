@@ -50,7 +50,8 @@ class Backups(object):
                         (1,0,1),
                         (1,1,0.25)]
         self.day_width=4
-        self.devblobsize=2
+        self.device_indicator_height=2
+        self.device_key_indicator_width=16
         self._retrieve()
 
     # Backup loading and analysis
@@ -81,6 +82,7 @@ class Backups(object):
 
         Initializes:
         hv_to_row -- dict mapping host:volume to a row number (from 0)
+        device_list -- list of devices in order
         device_to_index -- dict mapping device to a color number (from 0)
         """
         hv_dict={}
@@ -100,13 +102,13 @@ class Backups(object):
             self.hv_to_row[hv]=row
             row+=1
         # Map device names to an index
-        device_list=list(device_dict.keys())
-        device_list.sort()
-        devindex=0
+        self.device_list=list(device_dict.keys())
+        self.device_list.sort()
+        device_index=0
         self.device_to_index={}
-        for device in device_list:
-            self.device_to_index[device]=devindex
-            devindex+=1
+        for device in self.device_list:
+            self.device_to_index[device]=device_index
+            device_index+=1
 
     # Text handling
 
@@ -153,7 +155,7 @@ class Backups(object):
         """
         self.host_width=0
         self.volume_width=0
-        self.row_height=len(self.device_to_index)*self.devblobsize
+        self.row_height=len(self.device_to_index)*self.device_indicator_height
         for volume in self.hv_to_row:
             host,volume=volume.split(':')
             i,l=self._text_extent(c, host)
@@ -193,6 +195,29 @@ class Backups(object):
         self.row_width=self.day_width*self.days
         self.rows_height=len(self.hv_to_row)*self.row_height
 
+    def _extents_device_key(self, c):
+        """Calculate device key extents
+
+        Arguments:
+        c -- cairo context
+
+        Initializes:
+        max_device_width -- maximum width of a device name
+        max_device_height -- maximum height of a device name
+        device_key_width -- width of device key
+        device_key_height -- height of device key
+        """
+        self.max_device_width=0
+        self.max_device_height=0
+        for device in self.device_list:
+            i,l=self._text_extent(c, device)
+            if l[2] > self.max_device_width: self.max_device_width=l[2]
+            if l[3] > self.max_device_height: self.max_device_height=l[3]
+        self.device_key_width=(self.max_device_width
+                               + self.xpad
+                               + self.device_key_indicator_width)
+        self.device_key_height=self.max_device_height * len(self.device_list)
+        
     def _extents_total(self, c):
         """Calculate total extents
 
@@ -201,12 +226,17 @@ class Backups(object):
 
         Initializes:
         days_start -- x coordinate of the first day's column
+        device_key_x -- top left of device key
+        device_key_y -- top left of device key
         total_width -- image width
         total_height -- image height
         """
         self.days_start=self.host_width+self.volume_width
         self.total_width=self.days_start+self.row_width
-        self.total_height=self.rows_height+self.ypad+self.date_label_height
+        self.device_key_x=self.total_width-self.device_key_width
+        self.device_key_y=(self.rows_height+self.ypad
+                           +self.date_label_height+self.ypad)
+        self.total_height=self.device_key_y+self.device_key_height
 
     def _render_background(self, c):
         """Render the background
@@ -271,12 +301,29 @@ class Backups(object):
         for backup in self.backups:
             row=self.hv_to_row["%s:%s" % (backup.host, backup.volume)]
             col=date.fromtimestamp(backup.time).toordinal()-self.min_ordinal
-            devindex=self.device_to_index[backup.device]
-            c.set_source_rgb(*self.devcolors[devindex])
+            device_index=self.device_to_index[backup.device]
+            c.set_source_rgb(*self.devcolors[device_index])
             c.rectangle(self.days_start+col*self.day_width,
-                        row*self.row_height+devindex*self.devblobsize,
+                        row*self.row_height+device_index*self.device_indicator_height,
                         self.day_width,
-                        self.devblobsize)
+                        self.device_indicator_height)
+            c.fill()
+
+    def _render_device_key(self, c):
+        """Render the device key
+
+        Arguments:
+        c -- cairo context"""
+        device_index=0
+        for device_index in range(0,len(self.device_list)):
+            device=self.device_list[device_index]
+            y=self.device_key_y+device_index*self.max_device_height
+            c.set_source_rgb(*self.fg)
+            self._text(c, self.device_key_x, y, device)
+            c.set_source_rgb(*self.devcolors[device_index])
+            y+=int((self.max_device_height-self.device_indicator_height)/2)
+            c.rectangle(self.device_key_x+self.max_device_width+self.xpad, y,
+                        self.device_key_indicator_width, self.device_indicator_height)
             c.fill()
 
     def render(self, c, render=True):
@@ -291,6 +338,7 @@ class Backups(object):
         self._ranges()
         self._extents_row_labels(c)
         self._extents_rows(c)
+        self._extents_device_key(c)
         self._extents_total(c)
         if render:
             self._render_background(c)
@@ -298,6 +346,7 @@ class Backups(object):
             self._render_date_bars(c)
             self._render_date_labels(c)
             self._render_backups(c)
+            self._render_device_key(c)
         return self.total_width, self.total_height
 
     def render_fitted_image(self):
