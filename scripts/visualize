@@ -46,7 +46,7 @@ class Backups(object):
         self.bar=(0.9375,0.9375,0.9375)
         self.devcolors=[(1,0,0),
                         (0,1,0),
-                        (0,1,1),
+                        (0,0.125,1),
                         (1,0,1),
                         (1,1,0.25)]
         self.day_width=4
