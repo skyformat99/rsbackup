@@ -194,16 +194,34 @@ class Backups(object):
         self.rows_height=len(self.hv_to_row)*self.row_height
         
     def _extents_total(self, c):
+        """Calculate total extents
+
+        Arguments:
+        c -- cairo context
+
+        Initializes:
+        days_start -- x coordinate of the first day's column
+        total_width -- image width
+        total_height -- image height
+        """
         self.days_start=self.host_width+self.volume_width
         self.total_width=self.days_start+self.row_width
         self.total_height=self.rows_height+self.ypad+self.date_label_height
         
     def _render_background(self, c):
+        """Render the background
+
+        Arguments:
+        c -- cairo context"""
         c.rectangle(0,0,self.total_width,self.total_height)
         c.set_source_rgb(*self.bg)
         c.fill()
 
     def _render_row_labels(self, c):
+        """Render the row labels
+
+        Arguments:
+        c -- cairo context"""
         c.set_source_rgb(*self.fg)
         for hv in self.hv_to_row:
             host,volume=hv.split(':')
@@ -212,6 +230,10 @@ class Backups(object):
             self._text(c, self.host_width, row * self.row_height, volume)
 
     def _render_date_bars(self, c):
+        """Render the date bars
+
+        Arguments:
+        c -- cairo context"""
         c.set_source_rgb(*self.bar)
         x=self.host_width+self.volume_width
         for o in range(self.min_ordinal, self.max_ordinal+1, 2):
@@ -220,6 +242,10 @@ class Backups(object):
         c.fill()
 
     def _render_date_labels(self, c):
+        """Render the date labels
+
+        Arguments:
+        c -- cairo context"""
         c.set_source_rgb(*self.fg)
         x=self.host_width+self.volume_width
         y=self.rows_height+self.ypad
@@ -237,6 +263,10 @@ class Backups(object):
                 limit=x-w-self.xpad
 
     def _render_backups(self, c):
+        """Render the date backups
+
+        Arguments:
+        c -- cairo context"""
         # TODO some kind of legend for the backups wouldn't go amiss
         for backup in self.backups:
             row=self.hv_to_row["%s:%s" % (backup.host, backup.volume)]
@@ -250,7 +280,15 @@ class Backups(object):
             c.fill()
                         
             
-    def visualize(self, c, render=True):
+    def render(self, c, render=True):
+        """Render the entire layout to a surface
+
+        Arguments:
+        c -- cairo context
+        render -- True to render, False to just calculate extents
+
+        Returns:
+        width, height -- Size of layout"""
         self._ranges()
         self._extents_row_labels(c)
         self._extents_rows(c)
@@ -263,16 +301,20 @@ class Backups(object):
             self._render_backups(c)
         return self.total_width, self.total_height
 
-    def fitted(self):
+    def render_fitted_image(self):
+        """Construct an appropriately size surface and render to that
+
+        Arguments:
+        c -- cairo context"""
         s=cairo.ImageSurface(cairo.FORMAT_ARGB32, 640, 480)
         c=pangocairo.CairoContext(cairo.Context(s))
-        w,h=backups.visualize(c, render=False)
+        w,h=backups.render(c, render=False)
         s=cairo.ImageSurface(cairo.FORMAT_ARGB32, w, h)
         c=pangocairo.CairoContext(cairo.Context(s))
-        backups.visualize(c, render=True)
+        backups.render(c, render=True)
         return s
     
 if __name__ == '__main__':
     backups=Backups()
-    surface=backups.fitted()
+    surface=backups.render_fitted_image()
     surface.write_to_png("rsbackup.png") # TODO
