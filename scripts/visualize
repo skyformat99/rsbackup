@@ -1,0 +1,280 @@
+#! /usr/bin/python
+#coding=UTF-8
+#
+# Copyright © 2015 Richard Kettlewell.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+import cairo, pangocairo
+from datetime import date
+
+class Backup(object):
+    """Representation of a single backup"""
+    def __init__(self,host,volume,device,time,status):
+        self.host=host
+        self.volume=volume
+        self.device=device
+        self.time=time
+        self.status=status
+
+class Backups(object):
+    """Representation of all backups"""
+    def __init__(self, db="/home/richard/backups.db"):
+        """Load the list of backups
+
+        Arguments:
+        db -- database path
+        """
+        self.db=db
+        self.conn=None
+        self.font="Serif"
+        self.xpad=8
+        self.ypad=2
+        self.bg=(1,1,1)
+        self.fg=(0,0,0)
+        self.bar=(0.9375,0.9375,0.9375)
+        self.devcolors=[(1,0,0),
+                        (0,1,0),
+                        (0,1,1),
+                        (1,0,1),
+                        (1,1,0.25)]
+        self.day_width=4
+        self.devblobsize=2
+        self._retrieve()
+
+    # Backup loading and analysis
+        
+    def _conn(self):
+        """Return a connection to the database"""
+        if self.conn is None:
+            import sqlite3
+            self.conn=sqlite3.connect(self.db)
+        return self.conn
+
+    def _retrieve(self):
+        """Load self up with complete backups
+
+        Initializes:
+        backups -- the list of backups, in no particular order"""
+        c=self._conn().cursor()
+        backups=[]
+        for row in c.execute(
+                "SELECT host,volume,device,time,status FROM backup"):
+            backup=Backup(*tuple(row))
+            if backup.status==2:
+                backups.append(backup)
+        self.backups=backups
+
+    def _ranges(self):
+        """Analyse backups
+        
+        Initializes:
+        hvi -- dict mapping host:volume to a row number (from 0)
+        devis -- dict mapping device to a color number (from 0)
+        """
+        hvd={}
+        devd={}
+        for backup in self.backups:
+            hvd["%s:%s" % (backup.host, backup.volume)] = True
+            devd[backup.device]=True
+        # TODO also, volumes from config, so we can see things with no
+        # backups
+        # Put volumes into a coherent order
+        hvs=list(hvd.keys())
+        hvs.sort()
+        # Map volume identification to row number
+        row=0
+        self.hvi={}
+        for hv in hvs:
+            self.hvi[hv]=row
+            row+=1
+        # Map device names to an index
+        devs=list(devd.keys())
+        devs.sort()
+        devindex=0
+        self.devis={}
+        for device in devs:
+            self.devis[device]=devindex
+            devindex+=1
+
+    # Text handling
+            
+    def _text_extent(self, c, t):
+        """Return text extents
+        
+        Arguments:
+        c -- cairo context
+        t -- text to analyze
+
+        Returns ink, logical where each is (x,y,w,h)."""
+        layout=c.create_layout()
+        layout.set_text(t)
+        #layout.set_font_description(self.font)  # TODO
+        return layout.get_pixel_extents()
+
+    def _text(self, c, x, y, t):
+        """Render text
+
+        Arguments:
+        c -- cairo context
+        x -- top left x coordinate
+        y -- top left y coordinate
+        t -- text to render
+
+        Returns text extents as ink, logical where each is (x,y,w,h)."""
+        layout=c.create_layout()
+        layout.set_text(t)
+        #layout.set_font_description(self.font)  # TODO
+        c.move_to(x, y)
+        c.show_layout(layout)
+        return layout.get_pixel_extents()
+
+    def _extents_row_labels(self, c):
+        """Calculate row label extents
+
+        Arguments:
+        c -- cairo context
+
+        Initializes:
+        host_width -- width of the host labels
+        volume_width -- width of the volume labels
+        row_height -- height of a row
+        """
+        self.host_width=0
+        self.volume_width=0
+        self.row_height=len(self.devis)*self.devblobsize
+        for volume in self.hvi:
+            host,volume=volume.split(':')
+            i,l=self._text_extent(c, host)
+            if l[2] > self.host_width: self.host_width=l[2]
+            if l[3] > self.row_height: self.row_height=l[3]
+            i,l=self._text_extent(c, volume)
+            if l[2] > self.volume_width: self.volume_width=l[2]
+            if l[3] > self.row_height: self.row_height=l[3]
+        self.host_width+=self.xpad
+        self.volume_width+=self.xpad
+        self.row_height+=self.ypad
+
+    def _extents_rows(self, c):
+        """Calculate row layout extents
+
+        Arguments:
+        c -- cairo context
+
+        Initializes:
+        min_ordinal -- earliest day number
+        max_ordinal -- latest day numer
+        date_label_height -- height of date labels
+        row_width -- total width of rows
+        rows_height -- total height of row layout
+        """
+        self.min_ordinal=0xFFFFFFFFFFFFFFFF
+        self.max_ordinal=0
+        self.date_label_height=0
+        for backup in self.backups:
+            d=date.fromtimestamp(backup.time)
+            o=d.toordinal()
+            if o < self.min_ordinal: self.min_ordinal=o
+            if o > self.max_ordinal: self.max_ordinal=o
+            i,l=self._text_extent(c, d.isoformat())
+            if l[3] > self.date_label_height: self.date_label_height=l[3]
+        self.days=self.max_ordinal - self.min_ordinal+1
+        self.row_width=self.day_width*self.days
+        self.rows_height=len(self.hvi)*self.row_height
+
+    def _extents_total(self, c):
+        self.days_start=self.host_width+self.volume_width
+        self.total_width=self.days_start+self.row_width
+        self.total_height=self.rows_height+self.ypad+self.date_label_height
+        
+    def _render_background(self, c):
+        c.rectangle(0,0,self.total_width,self.total_height)
+        c.set_source_rgb(*self.bg)
+        c.fill()
+
+    def _render_row_labels(self, c):
+        c.set_source_rgb(*self.fg)
+        for hv in self.hvi:
+            host,volume=hv.split(':')
+            row=self.hvi[hv]
+            self._text(c, 0, row * self.row_height, host)
+            self._text(c, self.host_width, row * self.row_height, volume)
+
+    def _render_date_bars(self, c):
+        c.set_source_rgb(*self.bar)
+        x=self.host_width+self.volume_width
+        for o in range(self.min_ordinal, self.max_ordinal+1, 2):
+            c.rectangle(x,0,self.day_width,self.rows_height)
+            x+=self.day_width*2
+        c.fill()
+
+    def _render_date_labels(self, c):
+        # TODO better would be to start at the right and work back
+        # - then you get the label for the most recent day
+        c.set_source_rgb(*self.fg)
+        x=self.host_width+self.volume_width
+        y=self.rows_height+self.ypad
+        limit=0
+        for o in range(self.min_ordinal, self.max_ordinal+1):
+            if x >= limit:
+                d=date.fromordinal(o)
+                i,e=self._text_extent(c, d.isoformat())
+                if x+e[2] >= self.total_width:
+                    return
+                self._text(c, x, y, d.isoformat())
+                c.rectangle(x,y-self.ypad,self.day_width, self.ypad)
+                c.fill()
+                limit=x+e[2]+self.xpad
+            x+=self.day_width
+
+    def _render_backups(self, c):
+        # TODO some kind of legend for the backups wouldn't go amiss
+        for backup in self.backups:
+            row=self.hvi["%s:%s" % (backup.host, backup.volume)]
+            col=date.fromtimestamp(backup.time).toordinal()-self.min_ordinal
+            devindex=self.devis[backup.device]
+            c.set_source_rgb(*self.devcolors[devindex])
+            c.rectangle(self.days_start+col*self.day_width,
+                        row*self.row_height+devindex*self.devblobsize,
+                        self.day_width,
+                        self.devblobsize)
+            c.fill()
+                        
+            
+    def visualize(self, c, render=True):
+        self._ranges()
+        self._extents_row_labels(c)
+        self._extents_rows(c)
+        self._extents_total(c)
+        if render:
+            self._render_background(c)
+            self._render_row_labels(c)
+            self._render_date_bars(c)
+            self._render_date_labels(c)
+            self._render_backups(c)
+        return self.total_width, self.total_height
+
+    def fitted(self):
+        s=cairo.ImageSurface(cairo.FORMAT_ARGB32, 640, 480)
+        c=pangocairo.CairoContext(cairo.Context(s))
+        w,h=backups.visualize(c, render=False)
+        s=cairo.ImageSurface(cairo.FORMAT_ARGB32, w, h)
+        c=pangocairo.CairoContext(cairo.Context(s))
+        backups.visualize(c, render=True)
+        return s
+    
+if __name__ == '__main__':
+    backups=Backups()
+    surface=backups.fitted()
+    surface.write_to_png("rsbackup.png") # TODO
