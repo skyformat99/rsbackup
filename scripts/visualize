@@ -230,7 +230,7 @@ class Backups(object):
                 d=date.fromordinal(o)
                 i,e=self._text_extent(c, d.isoformat())
                 w=e[2]
-                self._text(c, x-w, y, d.isoformat())
+                self._text(c, x-w+self.day_width, y, d.isoformat())
                 c.rectangle(x, y-self.ypad,
                             self.day_width, self.ypad)
                 c.fill()
