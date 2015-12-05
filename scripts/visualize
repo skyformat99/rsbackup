@@ -80,32 +80,32 @@ class Backups(object):
         """Analyse backups
         
         Initializes:
-        hvi -- dict mapping host:volume to a row number (from 0)
-        devis -- dict mapping device to a color number (from 0)
+        hv_to_row -- dict mapping host:volume to a row number (from 0)
+        device_to_index -- dict mapping device to a color number (from 0)
         """
-        hvd={}
-        devd={}
+        hv_dict={}
+        device_dict={}
         for backup in self.backups:
-            hvd["%s:%s" % (backup.host, backup.volume)] = True
-            devd[backup.device]=True
+            hv_dict["%s:%s" % (backup.host, backup.volume)] = True
+            device_dict[backup.device]=True
         # TODO also, volumes from config, so we can see things with no
         # backups
         # Put volumes into a coherent order
-        hvs=list(hvd.keys())
-        hvs.sort()
+        hv_list=list(hv_dict.keys())
+        hv_list.sort()
         # Map volume identification to row number
         row=0
-        self.hvi={}
-        for hv in hvs:
-            self.hvi[hv]=row
+        self.hv_to_row={}
+        for hv in hv_list:
+            self.hv_to_row[hv]=row
             row+=1
         # Map device names to an index
-        devs=list(devd.keys())
-        devs.sort()
+        device_list=list(device_dict.keys())
+        device_list.sort()
         devindex=0
-        self.devis={}
-        for device in devs:
-            self.devis[device]=devindex
+        self.device_to_index={}
+        for device in device_list:
+            self.device_to_index[device]=devindex
             devindex+=1
 
     # Text handling
@@ -153,8 +153,8 @@ class Backups(object):
         """
         self.host_width=0
         self.volume_width=0
-        self.row_height=len(self.devis)*self.devblobsize
-        for volume in self.hvi:
+        self.row_height=len(self.device_to_index)*self.devblobsize
+        for volume in self.hv_to_row:
             host,volume=volume.split(':')
             i,l=self._text_extent(c, host)
             if l[2] > self.host_width: self.host_width=l[2]
@@ -191,8 +191,8 @@ class Backups(object):
             if l[3] > self.date_label_height: self.date_label_height=l[3]
         self.days=self.max_ordinal - self.min_ordinal+1
         self.row_width=self.day_width*self.days
-        self.rows_height=len(self.hvi)*self.row_height
-
+        self.rows_height=len(self.hv_to_row)*self.row_height
+        
     def _extents_total(self, c):
         self.days_start=self.host_width+self.volume_width
         self.total_width=self.days_start+self.row_width
@@ -205,9 +205,9 @@ class Backups(object):
 
     def _render_row_labels(self, c):
         c.set_source_rgb(*self.fg)
-        for hv in self.hvi:
+        for hv in self.hv_to_row:
             host,volume=hv.split(':')
-            row=self.hvi[hv]
+            row=self.hv_to_row[hv]
             self._text(c, 0, row * self.row_height, host)
             self._text(c, self.host_width, row * self.row_height, volume)
 
@@ -239,9 +239,9 @@ class Backups(object):
     def _render_backups(self, c):
         # TODO some kind of legend for the backups wouldn't go amiss
         for backup in self.backups:
-            row=self.hvi["%s:%s" % (backup.host, backup.volume)]
+            row=self.hv_to_row["%s:%s" % (backup.host, backup.volume)]
             col=date.fromtimestamp(backup.time).toordinal()-self.min_ordinal
-            devindex=self.devis[backup.device]
+            devindex=self.device_to_index[backup.device]
             c.set_source_rgb(*self.devcolors[devindex])
             c.rectangle(self.days_start+col*self.day_width,
                         row*self.row_height+devindex*self.devblobsize,
