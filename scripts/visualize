@@ -44,7 +44,8 @@ class Backups(object):
         self.background_color=(1,1,1)
         self.foreground_color=(0,0,0)
         self.stripe_color=(0.9375,0.9375,0.9375)
-        self.guide_color=(0.875,0.875,0.875)
+        self.volume_guide_color=(0.9375,0.9375,0.9375)
+        self.host_guide_color=(0.875,0.875,0.875)
         self.device_colors=[(1,0,0),
                             (0,1,0),
                             (0,0.125,1),
@@ -266,10 +267,12 @@ class Backups(object):
             self._text(c, self.host_width, y, volume)
             if host != last_host:
                 self._text(c, 0, row * self.row_height, host)
-                c.set_source_rgb(*self.guide_color)
-                c.rectangle(self.days_start, y-1,
-                            self.row_width, 1)
-                c.fill()
+                c.set_source_rgb(*self.host_guide_color)
+            else:
+                c.set_source_rgb(*self.volume_guide_color)
+            c.rectangle(self.days_start, y-1,
+                        self.row_width, 1)
+            c.fill()
             row+=1
             last_host=host
             
