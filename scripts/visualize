@@ -41,14 +41,14 @@ class Backups(object):
         self.font="Serif"
         self.xpad=8
         self.ypad=2
-        self.bg=(1,1,1)
-        self.fg=(0,0,0)
-        self.bar=(0.9375,0.9375,0.9375)
-        self.devcolors=[(1,0,0),
-                        (0,1,0),
-                        (0,0.125,1),
-                        (1,0,1),
-                        (1,1,0.25)]
+        self.background_color=(1,1,1)
+        self.foreground_color=(0,0,0)
+        self.stripe_color=(0.9375,0.9375,0.9375)
+        self.device_colors=[(1,0,0),
+                            (0,1,0),
+                            (0,0.125,1),
+                            (1,0,1),
+                            (1,1,0.25)]
         self.day_width=4
         self.device_indicator_height=2
         self.device_key_indicator_width=16
@@ -244,7 +244,7 @@ class Backups(object):
         Arguments:
         c -- cairo context"""
         c.rectangle(0,0,self.total_width,self.total_height)
-        c.set_source_rgb(*self.bg)
+        c.set_source_rgb(*self.background_color)
         c.fill()
 
     def _render_row_labels(self, c):
@@ -252,7 +252,7 @@ class Backups(object):
 
         Arguments:
         c -- cairo context"""
-        c.set_source_rgb(*self.fg)
+        c.set_source_rgb(*self.foreground_color)
         for hv in self.hv_to_row:
             host,volume=hv.split(':')
             row=self.hv_to_row[hv]
@@ -264,7 +264,7 @@ class Backups(object):
 
         Arguments:
         c -- cairo context"""
-        c.set_source_rgb(*self.bar)
+        c.set_source_rgb(*self.stripe_color)
         x=self.host_width+self.volume_width
         for o in range(self.min_ordinal, self.max_ordinal+1, 2):
             c.rectangle(x,0,self.day_width,self.rows_height)
@@ -276,7 +276,7 @@ class Backups(object):
 
         Arguments:
         c -- cairo context"""
-        c.set_source_rgb(*self.fg)
+        c.set_source_rgb(*self.foreground_color)
         x=self.host_width+self.volume_width
         y=self.rows_height+self.ypad
         limit=self.total_width
@@ -302,7 +302,7 @@ class Backups(object):
             row=self.hv_to_row["%s:%s" % (backup.host, backup.volume)]
             col=date.fromtimestamp(backup.time).toordinal()-self.min_ordinal
             device_index=self.device_to_index[backup.device]
-            c.set_source_rgb(*self.devcolors[device_index])
+            c.set_source_rgb(*self.device_colors[device_index])
             c.rectangle(self.days_start+col*self.day_width,
                         row*self.row_height+device_index*self.device_indicator_height,
                         self.day_width,
@@ -318,9 +318,9 @@ class Backups(object):
         for device_index in range(0,len(self.device_list)):
             device=self.device_list[device_index]
             y=self.device_key_y+device_index*self.max_device_height
-            c.set_source_rgb(*self.fg)
+            c.set_source_rgb(*self.foreground_color)
             self._text(c, self.device_key_x, y, device)
-            c.set_source_rgb(*self.devcolors[device_index])
+            c.set_source_rgb(*self.device_colors[device_index])
             y+=int((self.max_device_height-self.device_indicator_height)/2)
             c.rectangle(self.device_key_x+self.max_device_width+self.xpad, y,
                         self.device_key_indicator_width, self.device_indicator_height)
