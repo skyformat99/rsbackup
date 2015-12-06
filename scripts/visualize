@@ -81,6 +81,7 @@ class Backups(object):
         """Analyse backups
 
         Initializes:
+        hv_list -- list of host:volume names in order
         hv_to_row -- dict mapping host:volume to a row number (from 0)
         device_list -- list of devices in order
         device_to_index -- dict mapping device to a color number (from 0)
@@ -93,12 +94,12 @@ class Backups(object):
         # TODO also, volumes from config, so we can see things with no
         # backups
         # Put volumes into a coherent order
-        hv_list=list(hv_dict.keys())
-        hv_list.sort()
+        self.hv_list=list(hv_dict.keys())
+        self.hv_list.sort()
         # Map volume identification to row number
         row=0
         self.hv_to_row={}
-        for hv in hv_list:
+        for hv in self.hv_list:
             self.hv_to_row[hv]=row
             row+=1
         # Map device names to an index
@@ -156,8 +157,8 @@ class Backups(object):
         self.host_width=0
         self.volume_width=0
         self.row_height=len(self.device_to_index)*self.device_indicator_height
-        for volume in self.hv_to_row:
-            host,volume=volume.split(':')
+        for hv in self.hv_list:
+            host,volume=hv.split(':')
             i,l=self._text_extent(c, host)
             if l[2] > self.host_width: self.host_width=l[2]
             if l[3] > self.row_height: self.row_height=l[3]
@@ -253,11 +254,15 @@ class Backups(object):
         Arguments:
         c -- cairo context"""
         c.set_source_rgb(*self.foreground_color)
-        for hv in self.hv_to_row:
+        row=0
+        last_host=""
+        for hv in self.hv_list:
             host,volume=hv.split(':')
-            row=self.hv_to_row[hv]
-            self._text(c, 0, row * self.row_height, host)
+            if host != last_host:
+                self._text(c, 0, row * self.row_height, host)
             self._text(c, self.host_width, row * self.row_height, volume)
+            row+=1
+            last_host=host
 
     def _render_date_bars(self, c):
         """Render the date bars
