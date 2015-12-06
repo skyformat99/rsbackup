@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import cairo, pangocairo
+import cairo,pango,pangocairo
 from datetime import date
 
 class Backup(object):
@@ -38,7 +38,7 @@ class Backups(object):
         """
         self.db=db
         self.conn=None
-        self.font="Serif"
+        self.font=pango.FontDescription("sans 10")
         self.xpad=8
         self.ypad=2
         self.background_color=(1,1,1)
@@ -122,7 +122,7 @@ class Backups(object):
         Returns ink, logical where each is (x,y,w,h)."""
         layout=c.create_layout()
         layout.set_text(t)
-        #layout.set_font_description(self.font)  # TODO
+        layout.set_font_description(self.font)
         return layout.get_pixel_extents()
 
     def _text(self, c, x, y, t):
@@ -137,7 +137,7 @@ class Backups(object):
         Returns text extents as ink, logical where each is (x,y,w,h)."""
         layout=c.create_layout()
         layout.set_text(t)
-        #layout.set_font_description(self.font)  # TODO
+        layout.set_font_description(self.font)
         c.move_to(x, y)
         c.show_layout(layout)
         return layout.get_pixel_extents()
