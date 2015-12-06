@@ -251,6 +251,9 @@ class Backups(object):
 
     def _render_row_labels(self, c):
         """Render the row labels
+        
+        Also renders horizontal guides, which is a bit out of place
+        but it's convenient to do here.
 
         Arguments:
         c -- cairo context"""
@@ -308,7 +311,6 @@ class Backups(object):
 
         Arguments:
         c -- cairo context"""
-        # TODO some kind of legend for the backups wouldn't go amiss
         for backup in self.backups:
             row=self.hv_to_row["%s:%s" % (backup.host, backup.volume)]
             col=date.fromtimestamp(backup.time).toordinal()-self.min_ordinal
