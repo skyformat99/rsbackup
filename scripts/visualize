@@ -43,7 +43,8 @@ class Backups(object):
         self.ypad=2
         self.background_color=(1,1,1)
         self.foreground_color=(0,0,0)
-        self.stripe_color=(0.9375,0.9375,0.9375)
+        self.stripe_color=(0.96875,0.96875,0.96875)
+        self.stripe_for='month'
         self.volume_guide_color=(0.9375,0.9375,0.9375)
         self.host_guide_color=(0.875,0.875,0.875)
         self.device_colors=[(1,0,0),
@@ -220,7 +221,7 @@ class Backups(object):
                                + self.xpad
                                + self.device_key_indicator_width)
         self.device_key_height=self.max_device_height * len(self.device_list)
-        
+
     def _extents_total(self, c):
         """Calculate total extents
 
@@ -252,7 +253,7 @@ class Backups(object):
 
     def _render_row_labels(self, c):
         """Render the row labels
-        
+
         Also renders horizontal guides, which is a bit out of place
         but it's convenient to do here.
 
@@ -275,18 +276,51 @@ class Backups(object):
             c.fill()
             row+=1
             last_host=host
-            
+
     def _render_date_bars(self, c):
         """Render the date bars
 
         Arguments:
         c -- cairo context"""
         c.set_source_rgb(*self.stripe_color)
+        if self.stripe_for=='day':
+            self._render_day_bars(c)
+        else:
+            self._render_month_bars(c)
+        c.fill()
+
+    def _render_day_bars(self, c):
         x=self.host_width+self.volume_width
         for o in range(self.min_ordinal, self.max_ordinal+1, 2):
             c.rectangle(x,0,self.day_width,self.rows_height)
             x+=self.day_width*2
-        c.fill()
+
+    def _render_month_bars(self, c):
+        x=self.host_width+self.volume_width
+        o=self.min_ordinal
+        start_x=x
+        start_m=None
+        sequence=0
+        while o <= self.max_ordinal:
+            d=date.fromordinal(o)
+            m=d.year*12+d.month-1
+            if start_m is None:
+                start_m=m
+                start_x=x
+            if m!=start_m:
+                if sequence%2 == 0:
+                    c.rectangle(start_x,0,
+                                x-start_x,
+                                self.rows_height)
+                sequence+=1
+                start_m=m
+                start_x=x
+            x+=self.day_width
+            o+=1
+        if sequence%2 == 0:
+            c.rectangle(start_x,0,
+                        x-start_x,
+                        self.rows_height)
 
     def _render_date_labels(self, c):
         """Render the date labels
