@@ -44,6 +44,7 @@ class Backups(object):
         self.background_color=(1,1,1)
         self.foreground_color=(0,0,0)
         self.stripe_color=(0.9375,0.9375,0.9375)
+        self.guide_color=(0.875,0.875,0.875)
         self.device_colors=[(1,0,0),
                             (0,1,0),
                             (0,0.125,1),
@@ -253,17 +254,22 @@ class Backups(object):
 
         Arguments:
         c -- cairo context"""
-        c.set_source_rgb(*self.foreground_color)
         row=0
         last_host=""
         for hv in self.hv_list:
             host,volume=hv.split(':')
+            y=row * self.row_height
+            c.set_source_rgb(*self.foreground_color)
+            self._text(c, self.host_width, y, volume)
             if host != last_host:
                 self._text(c, 0, row * self.row_height, host)
-            self._text(c, self.host_width, row * self.row_height, volume)
+                c.set_source_rgb(*self.guide_color)
+                c.rectangle(self.days_start, y-1,
+                            self.row_width, 1)
+                c.fill()
             row+=1
             last_host=host
-
+            
     def _render_date_bars(self, c):
         """Render the date bars
 
@@ -347,8 +353,8 @@ class Backups(object):
         self._extents_total(c)
         if render:
             self._render_background(c)
-            self._render_row_labels(c)
             self._render_date_bars(c)
+            self._render_row_labels(c)
             self._render_date_labels(c)
             self._render_backups(c)
             self._render_device_key(c)
