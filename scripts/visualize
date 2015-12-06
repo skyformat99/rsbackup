@@ -314,13 +314,15 @@ class Backups(object):
 
         Arguments:
         c -- cairo context"""
+        offset=int((self.row_height
+                    -self.device_indicator_height*len(self.device_list))/2)
         for backup in self.backups:
             row=self.hv_to_row["%s:%s" % (backup.host, backup.volume)]
             col=date.fromtimestamp(backup.time).toordinal()-self.min_ordinal
             device_index=self.device_to_index[backup.device]
             c.set_source_rgb(*self.device_colors[device_index])
             c.rectangle(self.days_start+col*self.day_width,
-                        row*self.row_height+device_index*self.device_indicator_height,
+                        row*self.row_height+offset+device_index*self.device_indicator_height,
                         self.day_width,
                         self.device_indicator_height)
             c.fill()
