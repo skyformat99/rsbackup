@@ -193,6 +193,8 @@ class Backups(object):
             o=d.toordinal()
             if o < self.min_ordinal: self.min_ordinal=o
             if o > self.max_ordinal: self.max_ordinal=o
+            # This overdelivers slightly - we aren't actually going to use
+            # all these labels.
             i,l=self._text_extent(c, d.isoformat())
             if l[3] > self.date_label_height: self.date_label_height=l[3]
         self.days=self.max_ordinal - self.min_ordinal+1
@@ -321,13 +323,19 @@ class Backups(object):
             c.rectangle(start_x,0,
                         x-start_x,
                         self.rows_height)
-
+            
     def _render_date_labels(self, c):
         """Render the date labels
 
         Arguments:
         c -- cairo context"""
         c.set_source_rgb(*self.foreground_color)
+        if self.stripe_for=='day':
+            self._render_day_labels(c)
+        else:
+            self._render_month_labels(c)
+
+    def _render_day_labels(self, c):
         x=self.host_width+self.volume_width
         y=self.rows_height+self.ypad
         limit=self.total_width
@@ -343,6 +351,32 @@ class Backups(object):
                 c.fill()
                 limit=x-w-self.xpad
 
+    def _render_month_labels(self, c):
+        y=self.rows_height+self.ypad
+        year=0
+        for o in range(self.min_ordinal, self.max_ordinal+1):
+            d=date.fromordinal(o)
+            if d.day==1:
+                x=self.days_start+(o-self.min_ordinal)*self.day_width
+                if d.year==year:
+                    # Full month mostly
+                    t=d.strftime("%B")
+                else:
+                    # Short month + year for a new year
+                    t=d.strftime("%b %Y")
+                    year=d.year
+                i,e=self._text_extent(c, t)
+                w=e[2]
+                if x+w > self.total_width:
+                    # Doesn't fit, back off to short month name
+                    t=d.strftime("%b")
+                    i,e=self._text_extent(c, t)
+                    w=e[2]
+                if x+w > self.total_width:
+                    # Still doesn't fit, just push it left
+                    x=self.total_width-w
+                self._text(c, x, y, t)
+                
     def _render_backups(self, c):
         """Render the date backups
 
