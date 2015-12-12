@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 noinst_LIBRARIES=librsbackup.a
-bin_PROGRAMS=rsbackup
+bin_PROGRAMS=rsbackup rsbackup-graph
 noinst_PROGRAMS=test-date test-io test-directory test-subprocess	\
 	test-unicode test-timespec test-command test-select \
 	test-confbase test-check test-device test-host test-volume 	\
@@ -22,7 +22,7 @@ noinst_PROGRAMS=test-date test-io test-directory test-subprocess	\
 	test-eventloop
 dist_noinst_SCRIPTS=check-source
 
-AM_CFLAGS=$(SQLITE3_CFLAGS)
+AM_CXXFLAGS=$(SQLITE3_CFLAGS) $(CAIROMM_CFLAGS) $(PANGOMM_CFLAGS)
 
 librsbackup_a_SOURCES=Backup.cc BulkRemove.cc Check.cc Command.cc	\
 Conf.cc \
@@ -35,11 +35,16 @@ Defaults.h DeviceAccess.h Document.h Email.h Errors.h FileLock.h IO.h	\
 rsbackup.h Store.h Subprocess.h Utils.h ConfBase.cc		\
 toLines.cc globFiles.cc Database.h Database.cc Report.h			\
 parseInteger.cc split.cc EventLoop.cc EventLoop.h nonblock.cc		\
-Action.cc Action.h BulkRemove.h
+Action.cc Action.h BulkRemove.h Render.h Render.cc HistoryGraph.h	\
+HistoryGraph.cc
 
 rsbackup_SOURCES=rsbackup.cc PruneAge.cc PruneNever.cc PruneExec.cc \
 	PruneDecay.cc
 rsbackup_LDADD=librsbackup.a $(SQLITE3_LIBS) $(BOOST_LIBS)
+
+rsbackup_graph_SOURCES=rsbackup-graph.cc PruneAge.cc PruneNever.cc	\
+	PruneExec.cc PruneDecay.cc
+rsbackup_graph_LDADD=librsbackup.a $(SQLITE3_LIBS) $(BOOST_LIBS) $(CAIROMM_LIBS) $(PANGOMM_LIBS)
 
 test_date_SOURCES=test-date.cc
 test_date_LDADD=librsbackup.a
