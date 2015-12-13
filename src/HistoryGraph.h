@@ -59,13 +59,13 @@ public:
    * @param row Device row number
    * @return Color
    */
-  const Render::Color &device_color(unsigned row) const;
+  const Color &device_color(unsigned row) const;
 
   /** @brief Return the color for a backup
    * @param backup Backup
    * @return Color
    */
-  const Render::Color &device_color(const Backup *backup) const {
+  const Color &device_color(const Backup *backup) const {
     return device_color(device_row(backup));
   }
 
@@ -209,7 +209,7 @@ struct HistoryGraphContext: public Render::Context {
    * - @c host_guide, used for the horizontal lines between hosts
    * - @c deviceN for 0<=N<=5, colors for devices
    */
-  std::map<std::string, Render::Color> colors;
+  std::map<std::string, Color> colors;
 };
 
 #endif /* HISTORYGRAPH_H */

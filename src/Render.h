@@ -21,6 +21,7 @@
 
 #include <cairomm/context.h>
 #include <pangomm/layout.h>
+#include "Color.h"
 
 namespace Render {
 
@@ -28,29 +29,6 @@ namespace Render {
   struct Context {
     /** @brief Cairo context */
     Cairo::RefPtr<Cairo::Context> cairo;
-  };
-
-  /** @brief An RGB color */
-  struct Color {
-    /** @brief Constructor
-     * @param r Red component
-     * @param g Green component
-     * @param b Blue component
-     *
-     * All components have values in the close interval [0,1].
-     */
-    Color(double r = 0, double g = 0, double b = 0):
-      red(r), green(g), blue(b) {
-    }
-
-    /** @brief Red component */
-    double red;
-
-    /** @brief Green component */
-    double green;
-
-    /** @brief Blue component */
-    double blue;
   };
 
   /** @brief Base class for widgets */

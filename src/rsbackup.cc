@@ -120,9 +120,9 @@ int main(int argc, char **argv) {
       ss << "td.bad { background-color: #"
          << std::setw(6) << std::setfill('0') << config.colorBad << " }\n";
       ss << "td.good { background-color: #"
-         << std::setw(6) << std::setfill('0')  << config.colorGood << " }\n";
+         << std::setw(6) << std::setfill('0')  << static_cast<unsigned>(config.colorGood) << " }\n";
       ss << "span.bad { color: #"
-         << std::setw(6) << std::setfill('0')  << config.colorBad << " }\n";
+         << std::setw(6) << std::setfill('0')  << static_cast<unsigned>(config.colorBad) << " }\n";
       d.htmlStyleSheet += ss.str();
       Report report(d);
       report.generate();

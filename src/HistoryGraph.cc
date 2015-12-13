@@ -86,7 +86,7 @@ DeviceKey::DeviceKey(HistoryGraphContext &ctx):
   set_padding(ctx.xpad, ctx.ypad);
 }
 
-const Render::Color &DeviceKey::device_color(unsigned row) const {
+const Color &DeviceKey::device_color(unsigned row) const {
   char di[64];
   snprintf(di, sizeof di, "device%u", row);
   return context.colors[di];

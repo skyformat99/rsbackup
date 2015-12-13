@@ -581,9 +581,9 @@ void Conf::write(std::ostream &os, int step, bool verbose) const {
   d(os, "#  colors 0xRRGGBB 0xRRGGBB", step);
   os << indent(step) << "colors "
      << std::hex
-     << "0x" << std::setw(6) << std::setfill('0') << colorGood
+     << "0x" << std::setw(6) << std::setfill('0') << static_cast<unsigned>(colorGood)
      << ' '
-     << "0x" << std::setw(6) << std::setfill('0') << colorBad
+     << "0x" << std::setw(6) << std::setfill('0') << static_cast<unsigned>(colorBad)
      << '\n'
      << std::dec;
   d(os, "", step);

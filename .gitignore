@@ -23,6 +23,7 @@ stamp-h1
 src/rsbackup
 src/rsbackup-graph
 src/test-check
+src/test-color
 src/test-command
 src/test-confbase
 src/test-database

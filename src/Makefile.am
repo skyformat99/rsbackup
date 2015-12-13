@@ -19,7 +19,7 @@ noinst_PROGRAMS=test-date test-io test-directory test-subprocess	\
 	test-confbase test-check test-device test-host test-volume 	\
 	test-progress test-database test-tolines test-globfiles \
 	test-lock test-split test-parseinteger test-prunedecay \
-	test-eventloop
+	test-eventloop test-color
 dist_noinst_SCRIPTS=check-source
 
 AM_CXXFLAGS=$(SQLITE3_CFLAGS) $(CAIROMM_CFLAGS) $(PANGOMM_CFLAGS)
@@ -36,7 +36,7 @@ rsbackup.h Store.h Subprocess.h Utils.h ConfBase.cc		\
 toLines.cc globFiles.cc Database.h Database.cc Report.h			\
 parseInteger.cc split.cc EventLoop.cc EventLoop.h nonblock.cc		\
 Action.cc Action.h BulkRemove.h Render.h Render.cc HistoryGraph.h	\
-HistoryGraph.cc Selection.h Selection.cc
+HistoryGraph.cc Selection.h Selection.cc Color.h
 
 rsbackup_SOURCES=rsbackup.cc PruneAge.cc PruneNever.cc PruneExec.cc \
 	PruneDecay.cc
@@ -48,6 +48,9 @@ rsbackup_graph_LDADD=librsbackup.a $(SQLITE3_LIBS) $(BOOST_LIBS) $(CAIROMM_LIBS)
 
 test_date_SOURCES=test-date.cc
 test_date_LDADD=librsbackup.a
+
+test_color_SOURCES=test-color.cc
+test_color_LDADD=librsbackup.a
 
 test_subprocess_SOURCES=test-subprocess.cc Subprocess.cc Errors.cc IO.cc \
 	EventLoop.cc nonblock.cc Action.cc
@@ -115,7 +118,7 @@ TESTS=test-date test-io test-directory test-subprocess test-unicode	\
 test-timespec test-command test-select test-confbase	\
 test-check test-device test-host test-volume test-progress test-database \
 test-tolines test-globfiles test-lock test-split test-parseinteger 	\
-test-prunedecay test-eventloop check-source
+test-prunedecay test-eventloop test-color check-source
 
 stylesheet.cc: ${top_srcdir}/doc/rsbackup.css
 	${top_srcdir}/scripts/txt2src stylesheet < $^ > $@
