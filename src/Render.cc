@@ -137,7 +137,7 @@ void Render::Grid::render() {
 
 double Render::Grid::justify(double x, double cell_width,
                              double child_width, int justification) {
-  return x + (cell_width - child_width) * (justification + 1) / 2.0;
+  return x + floor((cell_width - child_width) * (justification + 1) / 2.0);
 }
 
 // Colored
