@@ -25,13 +25,20 @@ HostLabels::HostLabels(HistoryGraphContext &ctx): Render::Grid(ctx) {
     throw std::runtime_error("no hosts found in configuration");
   for(auto host_iterator: config.hosts) {
     Host *host = host_iterator.second;
+    if(!host->selected())
+      continue;
     if(host->volumes.size() == 0)
       printf("%s has no volumes!?!\n", host_iterator.first.c_str());
     auto t = new Render::Text(ctx, host_iterator.first,
                               ctx.colors["foreground"]);
     cleanup(t);
     add(t, 0, row);
-    row += host->volumes.size();
+    for(auto volume_iterator: host->volumes) {
+      Volume *volume = volume_iterator.second;
+      if(!volume->selected())
+        continue;
+      ++row;
+    }
   }
   set_padding(ctx.xpad, ctx.ypad);
 }
@@ -40,7 +47,12 @@ VolumeLabels::VolumeLabels(HistoryGraphContext &ctx): Render::Grid(ctx) {
   unsigned row = 0;
   for(auto host_iterator: config.hosts) {
     Host *host = host_iterator.second;
+    if(!host->selected())
+      continue;
     for(auto volume_iterator: host->volumes) {
+      Volume *volume = volume_iterator.second;
+      if(!volume->selected())
+        continue;
       auto t = new Render::Text(ctx, volume_iterator.first,
                                 ctx.colors["foreground"]);
       cleanup(t);
@@ -89,15 +101,19 @@ HistoryGraphContent::HistoryGraphContent(HistoryGraphContext &ctx,
   rows(0) {
   for(auto host_iterator: config.hosts) {
     Host *host = host_iterator.second;
-    rows += host->volumes.size();
+    if(!host->selected())
+      continue;
     for(auto volume_iterator: host->volumes) {
       Volume *volume = volume_iterator.second;
+      if(!volume->selected())
+        continue;
       for(auto backup: volume->backups) {
         if(backup->getStatus() == COMPLETE) {
           earliest = std::min(earliest, backup->date);
           latest = std::max(latest, backup->date);
         }
       }
+      ++rows;
     }
   }
 }
@@ -130,8 +146,13 @@ void HistoryGraphContent::render_horizontal_guides() {
   unsigned row = 0;
   for(auto host_iterator: config.hosts) {
     Host *host = host_iterator.second;
+    if(!host->selected())
+      continue;
     set_source_color(context.colors["host_guide"]);
     for(auto volume_iterator: host->volumes) {
+      Volume *volume = volume_iterator.second;
+      if(!volume->selected())
+        continue;
       context.cairo->rectangle(0, row * (row_height + context.ypad),
                                width, 1);
       context.cairo->fill();
@@ -152,8 +173,12 @@ void HistoryGraphContent::render_data() {
                           * config.devices.size())) / 2);
   for(auto host_iterator: config.hosts) {
     Host *host = host_iterator.second;
+    if(!host->selected())
+      continue;
     for(auto volume_iterator: host->volumes) {
       Volume *volume = volume_iterator.second;
+      if(!volume->selected())
+        continue;
       for(auto backup: volume->backups) {
         if(backup->getStatus() == COMPLETE) {
           double x = (backup->date - earliest) * context.day_width;

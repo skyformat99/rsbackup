@@ -16,6 +16,7 @@
 #include <getopt.h>
 #include "Conf.h"
 #include "Command.h"
+#include "Selection.h"
 #include "IO.h"
 #include "HistoryGraph.h"
 
@@ -34,7 +35,7 @@ static const struct option options[] = {
 static const char *graphHelpString() {
   return
 "Usage:\n"
-"  rsbackup-graph [OPTIONS]\n"
+"  rsbackup-graph [OPTIONS] [--] [[-]HOST...] [[-]HOST:VOLUME...]\n"
 "\n"
 "Options:\n"
 "  --config, -c PATH       Set config file (default: /etc/rsbackup/config)\n"
@@ -62,6 +63,7 @@ static void version() {
 int main(int argc, char **argv) {
   int n;
   const char *output = "rsbackup.png";
+  VolumeSelections selections;
 
   // Override debug
   if(getenv("RSBACKUP_DEBUG"))
@@ -82,9 +84,14 @@ int main(int argc, char **argv) {
     }
   }
 
+  if(optind < argc)
+    for(n = optind; n < argc; ++n)
+      selections.add(argv[n]);
+
   config.read();
   config.validate();
   config.readState();
+  selections.select(config);
 
   // Eliminates segfault with "Failed to wrap object of type
   // 'PangoLayout'. Hint: this error is commonly caused by failing to call a
