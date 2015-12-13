@@ -135,7 +135,7 @@ void HistoryGraphContent::render_vertical_guides() {
     next.addMonth();
     double x = (d - earliest) * context.day_width;
     double w = (next - d) * context.day_width;
-    w = std::min(w, height - w);
+    w = std::min(w, width - x);
     context.cairo->rectangle(x, 0, w, height);
     d.addMonth();
   }
