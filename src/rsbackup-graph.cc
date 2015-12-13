@@ -1,4 +1,4 @@
-// Copyright © 2011-15 Richard Kettlewell.
+// Copyright © 2015 Richard Kettlewell.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 #include "Selection.h"
 #include "IO.h"
 #include "HistoryGraph.h"
+#include "Errors.h"
+#include "Utils.h"
 
 #include <pangomm/init.h>
 
@@ -61,66 +63,78 @@ static void version() {
 }
 
 int main(int argc, char **argv) {
-  int n;
-  const char *output = "rsbackup.png";
-  VolumeSelections selections;
+  try {
 
-  // Override debug
-  if(getenv("RSBACKUP_DEBUG"))
-    debug = true;
+    int n;
+    const char *output = "rsbackup.png";
+    VolumeSelections selections;
 
-  // Parse options
-  optind = 1;
-  while((n = getopt_long(argc, (char *const *)argv,
-                         "+hVdc:D:o:", options, nullptr)) >= 0) {
-    switch(n) {
-    case 'h': help();
-    case 'V': version();
-    case 'c': configPath = optarg; break;
-    case 'd': debug = true; break;
-    case 'D': database = optarg; break;
-    case 'o': output = optarg; break;
-    default: exit(1);
+    // Override debug
+    if(getenv("RSBACKUP_DEBUG"))
+      debug = true;
+
+    // Parse options
+    optind = 1;
+    while((n = getopt_long(argc, (char *const *)argv,
+                           "+hVdc:D:o:", options, nullptr)) >= 0) {
+      switch(n) {
+      case 'h': help();
+      case 'V': version();
+      case 'c': configPath = optarg; break;
+      case 'd': debug = true; break;
+      case 'D': database = optarg; break;
+      case 'o': output = optarg; break;
+      default: exit(1);
+      }
     }
+
+    if(optind < argc)
+      for(n = optind; n < argc; ++n)
+        selections.add(argv[n]);
+
+    config.read();
+    config.validate();
+    config.readState();
+    selections.select(config);
+
+    // Eliminates segfault with "Failed to wrap object of type
+    // 'PangoLayout'. Hint: this error is commonly caused by failing to call a
+    // library init() function.".
+    //
+    // How you're supposed to know about this I've not discovered.
+    Pango::init();
+
+    // Configuration
+    // TODO make actually configurable
+    HistoryGraphContext context;
+
+    // The graph
+    HistoryGraph graph(context);
+
+    // Use a throwaway surface to work out size
+    Cairo::RefPtr<Cairo::Surface> surface
+      = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32,
+                                    1, 1);
+    context.cairo = Cairo::Context::create(surface);
+    graph.set_extent();
+
+    // Render to the real surface
+    surface = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32,
+                                          ceil(graph.width),
+                                          ceil(graph.height));
+    context.cairo = Cairo::Context::create(surface);
+    graph.render();
+
+    surface->write_to_png(output);
+
+    return 0;
+  } catch(Error &e) {
+    error("%s", e.what());
+    if(debug)
+      e.trace(stderr);
+    return 1;
+  } catch(std::runtime_error &e) {
+    error("%s", e.what());
+    return 1;
   }
-
-  if(optind < argc)
-    for(n = optind; n < argc; ++n)
-      selections.add(argv[n]);
-
-  config.read();
-  config.validate();
-  config.readState();
-  selections.select(config);
-
-  // Eliminates segfault with "Failed to wrap object of type
-  // 'PangoLayout'. Hint: this error is commonly caused by failing to call a
-  // library init() function.".
-  //
-  // How you're supposed to know about this I've not discovered.
-  Pango::init();
-
-  // Configuration
-  // TODO make actually configurable
-  HistoryGraphContext context;
-
-  // The graph
-  HistoryGraph graph(context);
-
-  // Use a throwaway surface to work out size
-  Cairo::RefPtr<Cairo::Surface> surface
-    = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32,
-                                  1, 1);
-  context.cairo = Cairo::Context::create(surface);
-  graph.set_extent();
-
-  // Render to the real surface
-  surface = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32,
-                                        ceil(graph.width), ceil(graph.height));
-  context.cairo = Cairo::Context::create(surface);
-  graph.render();
-
-  surface->write_to_png(output);
-
-  return 0;
 }
