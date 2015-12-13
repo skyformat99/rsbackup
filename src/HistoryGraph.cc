@@ -16,6 +16,7 @@
 #include <config.h>
 #include "HistoryGraph.h"
 #include "Conf.h"
+#include "Errors.h"
 #include <limits>
 #include <cassert>
 
@@ -116,6 +117,8 @@ HistoryGraphContent::HistoryGraphContent(HistoryGraphContext &ctx,
       ++rows;
     }
   }
+  if(rows == 0)
+    throw CommandError("no volumes selected");
 }
 
 void HistoryGraphContent::set_extent() {
