@@ -86,10 +86,12 @@ DeviceKey::DeviceKey(HistoryGraphContext &ctx):
   set_padding(ctx.xpad, ctx.ypad);
 }
 
-const Color &DeviceKey::device_color(unsigned row) const {
+const Color DeviceKey::device_color(unsigned row) const {
   char di[64];
   snprintf(di, sizeof di, "device%u", row);
-  return context.colors[di];
+  if(context.colors.find(di) != context.colors.end())
+    return context.colors[di];
+  return context.color_strategy->get(row, config.devices.size());
 }
 
 HistoryGraphContent::HistoryGraphContent(HistoryGraphContext &ctx,
@@ -301,9 +303,5 @@ HistoryGraphContext::HistoryGraphContext() {
   colors["month_guide"] = {0.96875,0.96875,0.96875};
   colors["volume_guide"] = {0.9375,0.9375,0.9375};
   colors["host_guide"] = {0.875,0.875,0.875};
-  colors["device0"] = {1,0,0};
-  colors["device1"] = {0,1,0};
-  colors["device2"] = {0,0.125,1};
-  colors["device4"] = {1,0,1};
-  colors["device5"] = {1,1,0.25};
+  color_strategy = ColorStrategy::find("equidistant-hue");
 }

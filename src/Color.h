@@ -16,6 +16,9 @@
 #ifndef COLOR_H
 #define COLOR_H
 
+#include <string>
+#include <map>
+
 /** @brief An RGB color */
 struct Color {
   /** @brief Constructor
@@ -31,14 +34,15 @@ struct Color {
 
   /** @brief Constructor
    * @param rgb 24-bit red/green/blue color
-   *
-   *
    */
   Color(unsigned rgb = 0): red(component(rgb, 16)),
                            green(component(rgb, 8)),
                            blue(component(rgb, 0)) {
   }
 
+  /** @brief Convert to integer form
+   * @return 24-bit red/green/blue color value
+   */
   operator unsigned() const {
     return pack(red, 16) + pack(green, 8) + pack(blue, 0);
   }
@@ -52,14 +56,64 @@ struct Color {
   /** @brief Blue component */
   double blue;
 
+  /** @brief Convert from HSV
+   * @param h Hue, 0<=h<360
+   * @param s Saturation, 0<=s<=1
+   * @param v Value, 0<=v<=1
+   * @return Color value
+   */
+  static Color HSV(double h, double s, double v);
+
 private:
+  /** @brief Compute a component from integer form
+   * @param n Integer form
+   * @param shift Right shift
+   * @return Component value
+   */
   static double component(unsigned n, unsigned shift) {
     return (double)((n >> shift) & 255) / 255.0;
   }
 
+  /** @brief Pack a component into integer form
+   * @param c Component
+   * @param shift Left shift
+   * @return Partial integer form
+   */
   static unsigned pack(double c, unsigned shift) {
     return static_cast<unsigned>(255.0 * c) << shift;
   }
+};
+
+/** @brief A strategy for picking a small set of distinct colors */
+class ColorStrategy {
+public:
+  /** @brief Constructor
+   * @param name Name of this strategy
+   */
+  ColorStrategy(const char *name);
+
+  /* @brief Destructor */
+  virtual ~ColorStrategy() = default;
+
+  /** @brief Get a color
+   * @param n Item number, 0 <= @p n < @p items
+   * @param items Total number of items
+   * @return Selected color
+   */
+  virtual Color get(unsigned n, unsigned items) const = 0;
+
+  /** @brief Find a color strategy by name
+   * @param name Name of strategy
+   * @return Pointer to strategy
+   */
+  static const ColorStrategy *find(const std::string &name);
+
+private:
+  /** @brief Type of color strategy registry */
+  typedef std::map<std::string, ColorStrategy *> strategies_type;
+
+  /** @brief Color strategy registry */
+  static strategies_type *strategies;
 };
 
 #endif /* COLOR_H */

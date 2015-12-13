@@ -59,13 +59,13 @@ public:
    * @param row Device row number
    * @return Color
    */
-  const Color &device_color(unsigned row) const;
+  const Color device_color(unsigned row) const;
 
   /** @brief Return the color for a backup
    * @param backup Backup
    * @return Color
    */
-  const Color &device_color(const Backup *backup) const {
+  const Color device_color(const Backup *backup) const {
     return device_color(device_row(backup));
   }
 
@@ -199,6 +199,9 @@ struct HistoryGraphContext: public Render::Context {
   /** @brief Width of a the rectangle in a @ref DeviceKey */
   double device_key_indicator_width = 16;
 
+  /** @brief Color picking strategy */
+  const ColorStrategy *color_strategy;
+
   /** @brief Map of color names to values
    *
    * The known color names are:
@@ -207,7 +210,12 @@ struct HistoryGraphContext: public Render::Context {
    * - @c month_guide, used for the vertical month guide bars
    * - @c volume_guide, used for the horizontal lines between volumes of the same host
    * - @c host_guide, used for the horizontal lines between hosts
-   * - @c deviceN for 0<=N<=5, colors for devices
+   *
+   * Optionally you can set deviceN for 0<=N to give colors to the devices (in
+   * lexical order of name).  The preferred way to deal with this is to specify
+   * a color strategy and let the implementation choose colors.
+   *
+   * @todo Color strategy should be configurable
    */
   std::map<std::string, Color> colors;
 };

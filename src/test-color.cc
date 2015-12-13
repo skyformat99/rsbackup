@@ -35,5 +35,18 @@ int main() {
            c.red, c.green, c.blue, n, u);
     assert(u == n);
   }
+  assert(Color::HSV(0, 1, 1) == Color(0xFF0000));
+  assert(Color::HSV(60, 1, 1) == Color(0xFFFF00));
+  assert(Color::HSV(120, 1, 1) == Color(0x00FF00));
+  assert(Color::HSV(180, 1, 1) == Color(0x00FFFF));
+  assert(Color::HSV(240, 1, 1) == Color(0x0000FF));
+  assert(Color::HSV(300, 1, 1) == Color(0xFF00FF));
+
+  assert(Color::HSV(30, 1, 1) == Color(0xFF7F00));
+  assert(Color::HSV(90, 1, 1) == Color(0x7FFF00));
+  assert(Color::HSV(150, 1, 1) == Color(0x00FF7F));
+  assert(Color::HSV(210, 1, 1) == Color(0x007FFF));
+  assert(Color::HSV(270, 1, 1) == Color(0x7F00FF));
+  assert(Color::HSV(330, 1, 1) == Color(0xFF007F));
   return 0;
 }
