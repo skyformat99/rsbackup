@@ -94,7 +94,7 @@ namespace Render {
 
     /** @brief Clean up some other widget when this one is destroyed */
     void cleanup(Widget *w);
-    
+
   protected:
     /** @brief Called when the widget's extent potentially changes
      *
