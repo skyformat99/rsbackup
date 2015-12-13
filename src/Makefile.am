@@ -36,7 +36,7 @@ rsbackup.h Store.h Subprocess.h Utils.h ConfBase.cc		\
 toLines.cc globFiles.cc Database.h Database.cc Report.h			\
 parseInteger.cc split.cc EventLoop.cc EventLoop.h nonblock.cc		\
 Action.cc Action.h BulkRemove.h Render.h Render.cc HistoryGraph.h	\
-HistoryGraph.cc
+HistoryGraph.cc Selection.h Selection.cc
 
 rsbackup_SOURCES=rsbackup.cc PruneAge.cc PruneNever.cc PruneExec.cc \
 	PruneDecay.cc
