@@ -241,10 +241,10 @@ public:
    */
   std::string stylesheet;
 
-  /** @brief RGB triple for 'good' color code */
+  /** @brief 'good' color code */
   Color colorGood = COLOR_GOOD;
 
-  /** @brief RGB triple for 'bad' color code */
+  /** @brief 'bad' color code */
   Color colorBad = COLOR_BAD;
 
   /** @brief Read the master configuration file

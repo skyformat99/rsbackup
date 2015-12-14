@@ -37,7 +37,7 @@ toLines.cc globFiles.cc Database.h Database.cc Report.h			\
 parseInteger.cc split.cc EventLoop.cc EventLoop.h nonblock.cc		\
 Action.cc Action.h BulkRemove.h Render.h Render.cc HistoryGraph.h	\
 HistoryGraph.cc Selection.h Selection.cc Color.h Color.cc 		\
-ColorStrategy.cc
+ColorStrategy.cc parseFloat.cc
 
 rsbackup_SOURCES=rsbackup.cc PruneAge.cc PruneNever.cc PruneExec.cc \
 	PruneDecay.cc

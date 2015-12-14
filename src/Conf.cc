@@ -184,6 +184,76 @@ struct VolumeOnlyDirective: public Directive {
   }
 };
 
+/** @brief Base class for color-setting directives */
+struct ColorDirective: public Directive {
+  /** @brief Constructor
+   * @param name Name of directive
+   */
+  ColorDirective(const char *name): Directive(name, 1, 4) {}
+
+  void check(const ConfContext &cc) const override {
+    int args = cc.bits.size() - 1;
+    Directive::check(cc);
+    printf("%d\n", args);
+    if(args > 1 && args < 4)
+      throw SyntaxError("wrong number of arguments to '" + name + "'");
+    if(args == 4) {
+      if(cc.bits[1] == "rgb"
+         || cc.bits[1] == "hsv")
+        ;                               // OK
+      else
+        throw SyntaxError("invalid color representation '" + cc.bits[1] + "'");
+    }
+  }
+
+  void set(ConfContext &cc) const override {
+    int args = cc.bits.size() - 1;
+    if(args == 4) {
+      if(cc.bits[1] == "rgb")
+        set_rgb(cc, 2);
+      else if(cc.bits[1] == "hsv")
+        set_hsv(cc, 2);
+    } else
+      set_packed(cc, 1, 0);
+  }
+
+  /** @brief Parse and set an RGB color representation
+   * @param cc Configuration context
+   * @param n Index for first element
+   */
+  void set_rgb(ConfContext &cc, size_t n) const {
+    set(cc, Color(parseFloat(cc.bits[n], 0, 1),
+                  parseFloat(cc.bits[n+1], 0, 1),
+                  parseFloat(cc.bits[n+2], 0, 1)));
+  }
+
+  /** @brief Parse and set an HSV color representation
+   * @param cc Configuration context
+   * @param n Index for first element
+   */
+  void set_hsv(ConfContext &cc, size_t n) const {
+    set(cc, Color::HSV(parseFloat(cc.bits[n]),
+                       parseFloat(cc.bits[n+1], 0, 1),
+                       parseFloat(cc.bits[n+2], 0, 1)));
+  }
+
+  /** @brief Parse and set a packed integer color representation
+   * @param cc Configuration context
+   * @param n Index for first element
+   * @param radix Radix or 0 to pick as per strtol(3)
+   */
+  void set_packed(ConfContext &cc, size_t n, int radix = 0) const {
+    set(cc, Color(parseInteger(cc.bits[n], 0, 0xFFFFFF, radix)));
+  }
+
+  /** @brief Set a color
+   * @param cc Configuration context
+   * @param c Color to set
+   */
+  virtual void set(ConfContext &cc, const Color &c) const = 0;
+
+};
+
 // Global directives ----------------------------------------------------------
 
 /** @brief The @c store directive */
@@ -217,10 +287,28 @@ static const struct StyleSheetDirective: public Directive {
 static const struct ColorsDirective: public Directive {
   ColorsDirective(): Directive("colors", 2, 2) {}
   void set(ConfContext &cc) const override {
+    warning("%s:%d: the 'colors' directive is deprecated, use 'color-good' and 'color-bad' instead",
+            cc.path.c_str(), cc.line);
     cc.conf->colorGood = parseInteger(cc.bits[1], 0, 0xFFFFFF, 0);
     cc.conf->colorBad = parseInteger(cc.bits[2], 0, 0xFFFFFF, 0);
   }
 } colors_directive;
+
+/** @brief The @c color-good directive */
+static const struct ColorGoodDirective: public ColorDirective {
+  ColorGoodDirective(): ColorDirective("color-good") {}
+  void set(ConfContext &cc, const Color &c) const override {
+    cc.conf->colorGood = c;
+  }
+} color_good_directive;
+
+/** @brief The @c color-bad directive */
+static const struct ColorBadDirective: public ColorDirective {
+  ColorBadDirective(): ColorDirective("color-bad") {}
+  void set(ConfContext &cc, const Color &c) const override {
+    cc.conf->colorBad = c;
+  }
+} color_bad_directive;
 
 /** @brief The @c device directive */
 static const struct DeviceDirective: public Directive {
@@ -578,11 +666,13 @@ void Conf::write(std::ostream &os, int step, bool verbose) const {
   d(os, "", step);
 
   d(os, "# 'Good' and 'bad' colors for HTML report", step);
-  d(os, "#  colors 0xRRGGBB 0xRRGGBB", step);
-  os << indent(step) << "colors "
+  d(os, "#  color-good 0xRRGGBB", step);
+  d(os, "#  color-bad 0xRRGGBB", step);
+  os << indent(step) << "color-good "
      << std::hex
      << "0x" << std::setw(6) << std::setfill('0') << static_cast<unsigned>(colorGood)
-     << ' '
+     << '\n'
+     << indent(step) << "color-bad "
      << "0x" << std::setw(6) << std::setfill('0') << static_cast<unsigned>(colorBad)
      << '\n'
      << std::dec;
