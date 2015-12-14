@@ -406,6 +406,46 @@ static const struct IncludeDirective: public Directive {
   }
 } include_directive;
 
+/** @brief The graph-background directive */
+static const struct ColorGraphBackgroundDirective: public ColorDirective {
+  ColorGraphBackgroundDirective(): ColorDirective("color-graph-background") {}
+  void set(ConfContext &cc, const Color &c) const override {
+    cc.conf->colorGraphBackground = c;
+  }
+} color_graph_background_directive;
+
+/** @brief The graph-foreground directive */
+static const struct ColorGraphForegroundDirective: public ColorDirective {
+  ColorGraphForegroundDirective(): ColorDirective("color-graph-foreground") {}
+  void set(ConfContext &cc, const Color &c) const override {
+    cc.conf->colorGraphForeground = c;
+  }
+} color_graph_foreground_directive;
+
+/** @brief The month-guide directive */
+static const struct ColorMonthGuideDirective: public ColorDirective {
+  ColorMonthGuideDirective(): ColorDirective("color-month-guide") {}
+  void set(ConfContext &cc, const Color &c) const override {
+    cc.conf->colorMonthGuide = c;
+  }
+} color_month_guide_directive;
+
+/** @brief The host-guide directive */
+static const struct ColorHostGuideDirective: public ColorDirective {
+  ColorHostGuideDirective(): ColorDirective("color-host-guide") {}
+  void set(ConfContext &cc, const Color &c) const override {
+    cc.conf->colorHostGuide = c;
+  }
+} color_host_guide_directive;
+
+/** @brief The volume-guide directive */
+static const struct ColorVolumeGuideDirective: public ColorDirective {
+  ColorVolumeGuideDirective(): ColorDirective("color-volume-guide") {}
+  void set(ConfContext &cc, const Color &c) const override {
+    cc.conf->colorVolumeGuide = c;
+  }
+} color_volume_guide_directive;
+
 // Inheritable directives -----------------------------------------------------
 
 /** @brief The @c max-age directive */

@@ -31,7 +31,7 @@ HostLabels::HostLabels(HistoryGraphContext &ctx): Render::Grid(ctx) {
     if(host->volumes.size() == 0)
       printf("%s has no volumes!?!\n", host_iterator.first.c_str());
     auto t = new Render::Text(ctx, host_iterator.first,
-                              ctx.colors["foreground"]);
+                              config.colorGraphForeground);
     cleanup(t);
     add(t, 0, row);
     for(auto volume_iterator: host->volumes) {
@@ -55,7 +55,7 @@ VolumeLabels::VolumeLabels(HistoryGraphContext &ctx): Render::Grid(ctx) {
       if(!volume->selected())
         continue;
       auto t = new Render::Text(ctx, volume_iterator.first,
-                                ctx.colors["foreground"]);
+                                config.colorGraphForeground);
       cleanup(t);
       add(t, 0, row);
       ++row;
@@ -72,7 +72,7 @@ DeviceKey::DeviceKey(HistoryGraphContext &ctx):
     const auto &device = device_iterator.first;
     device_rows[device] = row;
     auto t = new Render::Text(ctx, device,
-                              ctx.colors["foreground"]);
+                              config.colorGraphForeground);
     cleanup(t);
     add(t, 0, row);
     auto r = new Render::Rectangle(ctx,
@@ -87,10 +87,12 @@ DeviceKey::DeviceKey(HistoryGraphContext &ctx):
 }
 
 const Color DeviceKey::device_color(unsigned row) const {
+  /* TODO
   char di[64];
   snprintf(di, sizeof di, "device%u", row);
   if(context.colors.find(di) != context.colors.end())
     return context.colors[di];
+  */
   return context.color_strategy->get(row, config.devices.size());
 }
 
@@ -131,7 +133,7 @@ void HistoryGraphContent::set_extent() {
 }
 
 void HistoryGraphContent::render_vertical_guides() {
-  set_source_color(context.colors["month_guide"]);
+  set_source_color(config.colorMonthGuide);
   Date d = earliest;
   while(d <= latest) {
     d.d = 1;
@@ -153,7 +155,7 @@ void HistoryGraphContent::render_horizontal_guides() {
     Host *host = host_iterator.second;
     if(!host->selected())
       continue;
-    set_source_color(context.colors["host_guide"]);
+    set_source_color(config.colorHostGuide);
     for(auto volume_iterator: host->volumes) {
       Volume *volume = volume_iterator.second;
       if(!volume->selected())
@@ -161,11 +163,11 @@ void HistoryGraphContent::render_horizontal_guides() {
       context.cairo->rectangle(0, row * (row_height + context.ypad),
                                width, 1);
       context.cairo->fill();
-      set_source_color(context.colors["volume_guide"]);
+      set_source_color(config.colorVolumeGuide);
       ++row;
     }
   }
-  set_source_color(context.colors["volume_guide"]);
+  set_source_color(config.colorVolumeGuide);
   context.cairo->rectangle(0, row * (row_height + context.ypad) - context.ypad,
                            width, 1);
   context.cairo->fill();
@@ -224,7 +226,7 @@ void TimeLabels::set_extent() {
       next.addMonth();
       double xnext = (next - content.earliest) * context.day_width;
       auto t = new Render::Text(context, "",
-                                context.colors["foreground"]);
+                                config.colorGraphForeground);
       cleanup(t);
       // Try increasingly compact formats until one fits
       static const char *const formats[] = {
@@ -291,17 +293,12 @@ void HistoryGraph::set_extent() {
 }
 
 void HistoryGraph::render() {
-  set_source_color(context.colors["background"]);
+  set_source_color(config.colorGraphBackground);
   context.cairo->rectangle(0, 0, width, height);
   context.cairo->fill();
   Grid::render();
 }
 
 HistoryGraphContext::HistoryGraphContext() {
-  colors["background"] = {1,1,1};
-  colors["foreground"] = {0,0,0};
-  colors["month_guide"] = {0.96875,0.96875,0.96875};
-  colors["volume_guide"] = {0.9375,0.9375,0.9375};
-  colors["host_guide"] = {0.875,0.875,0.875};
   color_strategy = ColorStrategy::find("equidistant-hue");
 }

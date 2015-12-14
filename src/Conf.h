@@ -247,6 +247,21 @@ public:
   /** @brief 'bad' color code */
   Color colorBad = COLOR_BAD;
 
+  /** @brief Foregroud color of graph */
+  Color colorGraphForeground = { 0, 0, 0 };
+
+  /** @brief Background color of graph */
+  Color colorGraphBackground = { 1, 1, 1 };
+
+  /** @brief Color of vertical bars repsenting months in graph */
+  Color colorMonthGuide = { 0.96875, 0.96875, 0.96875 };
+
+  /** @brief Color of horizontal lines between hosts in graph */
+  Color colorHostGuide = { 0.875, 0.875, 0.875 };
+
+  /** @brief Color of horizontal lines between volumes in graph */
+  Color colorVolumeGuide = { 0.9375, 0.9375, 0.9375 };
+
   /** @brief Read the master configuration file
    * @throws IOError if a file cannot be read
    * @throws ConfigError if the contents of a file are malformed
