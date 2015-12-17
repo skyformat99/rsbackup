@@ -446,6 +446,46 @@ static const struct ColorVolumeGuideDirective: public ColorDirective {
   }
 } color_volume_guide_directive;
 
+/** @brief The horizontal-padding directive */
+static const struct HorizontalPaddingDirective: public Directive {
+  HorizontalPaddingDirective(): Directive("horizontal-padding") {}
+  void set(ConfContext &cc) const override {
+    cc.conf->horizontalPadding = parseFloat(cc.bits[1],
+                                            0,
+                                            std::numeric_limits<double>::max());
+  }
+} horizontal_padding_directive;
+
+/** @brief The vertical-padding directive */
+static const struct VerticalPaddingDirective: public Directive {
+  VerticalPaddingDirective(): Directive("vertical-padding") {}
+  void set(ConfContext &cc) const override {
+    cc.conf->verticalPadding = parseFloat(cc.bits[1],
+                                          0,
+                                          std::numeric_limits<double>::max());
+  }
+} vertical_padding_directive;
+
+/** @brief The backup-indicator-width directive */
+static const struct BackupIndicatorWidthDirective: public Directive {
+  BackupIndicatorWidthDirective(): Directive("backup-indicator-width") {}
+  void set(ConfContext &cc) const override {
+    cc.conf->backupIndicatorWidth = parseFloat(cc.bits[1],
+                                               std::numeric_limits<double>::min(),
+                                               std::numeric_limits<double>::max());
+  }
+} backup_indicator_width_directive;
+
+/** @brief The backup-indicator-height directive */
+static const struct BackupIndicatorHeightDirective: public Directive {
+  BackupIndicatorHeightDirective(): Directive("backup-indicator-height") {}
+  void set(ConfContext &cc) const override {
+    cc.conf->backupIndicatorHeight = parseFloat(cc.bits[1],
+                                                std::numeric_limits<double>::min(),
+                                                std::numeric_limits<double>::max());
+  }
+} backup_indicator_height_directive;
+
 // Inheritable directives -----------------------------------------------------
 
 /** @brief The @c max-age directive */

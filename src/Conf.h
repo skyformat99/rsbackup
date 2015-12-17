@@ -262,6 +262,21 @@ public:
   /** @brief Color of horizontal lines between volumes in graph */
   Color colorVolumeGuide = { 0.9375, 0.9375, 0.9375 };
 
+  /** @brief Horizontal padding in graph */
+  double horizontalPadding = 8;
+
+  /** @brief Vertical padding in graph */
+  double verticalPadding = 2;
+
+  /** @brief Backup indicator width for one day */
+  double backupIndicatorWidth = 4;
+
+  /** @brief Minimum backup indicator height */
+  double backupIndicatorHeight = 2;
+
+  /** @brief Backup indicator width in the device key */
+  double backupIndicatorKeyWidth = 16;
+
   /** @brief Read the master configuration file
    * @throws IOError if a file cannot be read
    * @throws ConfigError if the contents of a file are malformed

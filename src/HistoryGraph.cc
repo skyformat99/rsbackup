@@ -41,7 +41,7 @@ HostLabels::HostLabels(HistoryGraphContext &ctx): Render::Grid(ctx) {
       ++row;
     }
   }
-  set_padding(ctx.xpad, ctx.ypad);
+  set_padding(config.horizontalPadding, config.verticalPadding);
 }
 
 VolumeLabels::VolumeLabels(HistoryGraphContext &ctx): Render::Grid(ctx) {
@@ -61,7 +61,7 @@ VolumeLabels::VolumeLabels(HistoryGraphContext &ctx): Render::Grid(ctx) {
       ++row;
     }
   }
-  set_padding(ctx.xpad, ctx.ypad);
+  set_padding(config.horizontalPadding, config.verticalPadding);
 }
 
 DeviceKey::DeviceKey(HistoryGraphContext &ctx):
@@ -76,7 +76,7 @@ DeviceKey::DeviceKey(HistoryGraphContext &ctx):
     cleanup(t);
     add(t, 0, row);
     auto r = new Render::Rectangle(ctx,
-                                   ctx.device_key_indicator_width,
+                                   config.backupIndicatorKeyWidth,
                                    indicator_height,
                                    device_color(row));
     rectangles.push_back(r);
@@ -84,7 +84,7 @@ DeviceKey::DeviceKey(HistoryGraphContext &ctx):
     add(r, 1, row, -1, 0);
     ++row;
   }
-  set_padding(ctx.xpad, ctx.ypad);
+  set_padding(config.horizontalPadding, config.verticalPadding);
 }
 
 void DeviceKey::set_indicator_height(double h) {
@@ -136,8 +136,8 @@ HistoryGraphContent::HistoryGraphContent(HistoryGraphContext &ctx,
 void HistoryGraphContent::set_extent() {
   assert(row_height > 0);
   auto columns = latest.toNumber() - earliest.toNumber() + 1;
-  height = rows ? row_height * rows + context.ypad * (rows - 1) : 0;
-  width = latest >= earliest ? context.day_width * columns : 0;
+  height = rows ? row_height * rows + config.verticalPadding * (rows - 1) : 0;
+  width = latest >= earliest ? config.backupIndicatorWidth * columns : 0;
 }
 
 void HistoryGraphContent::render_vertical_guides() {
@@ -148,8 +148,8 @@ void HistoryGraphContent::render_vertical_guides() {
     d.addMonth();
     Date next = d;
     next.addMonth();
-    double x = (d - earliest) * context.day_width;
-    double w = (next - d) * context.day_width;
+    double x = (d - earliest) * config.backupIndicatorWidth;
+    double w = (next - d) * config.backupIndicatorWidth;
     w = std::min(w, width - x);
     context.cairo->rectangle(x, 0, w, height);
     d.addMonth();
@@ -168,7 +168,7 @@ void HistoryGraphContent::render_horizontal_guides() {
       Volume *volume = volume_iterator.second;
       if(!volume->selected())
         continue;
-      context.cairo->rectangle(0, row * (row_height + context.ypad),
+      context.cairo->rectangle(0, row * (row_height + config.verticalPadding),
                                width, 1);
       context.cairo->fill();
       set_source_color(config.colorVolumeGuide);
@@ -176,14 +176,16 @@ void HistoryGraphContent::render_horizontal_guides() {
     }
   }
   set_source_color(config.colorVolumeGuide);
-  context.cairo->rectangle(0, row * (row_height + context.ypad) - context.ypad,
+  context.cairo->rectangle(0,
+                           row * (row_height + config.verticalPadding)
+                             - config.verticalPadding,
                            width, 1);
   context.cairo->fill();
 }
 
 void HistoryGraphContent::render_data() {
   double y = 0;
-  double base = floor((row_height + context.ypad - 1
+  double base = floor((row_height + config.verticalPadding - 1
                        - (indicator_height
                           * config.devices.size())) / 2) + 1;
   for(auto host_iterator: config.hosts) {
@@ -196,17 +198,17 @@ void HistoryGraphContent::render_data() {
         continue;
       for(auto backup: volume->backups) {
         if(backup->getStatus() == COMPLETE) {
-          double x = (backup->date - earliest) * context.day_width;
+          double x = (backup->date - earliest) * config.backupIndicatorWidth;
           auto device_row = device_key.device_row(backup);
           double offset = base + device_row * indicator_height;
           set_source_color(device_key.device_color(backup));
           context.cairo->rectangle(x, y + offset,
-                                   context.day_width,
+                                   config.backupIndicatorWidth,
                                    indicator_height);
           context.cairo->fill();
         }
       }
-      y += row_height + context.ypad;
+      y += row_height + config.verticalPadding;
     }
   }
 }
@@ -232,7 +234,7 @@ void TimeLabels::set_extent() {
       Date next = d;
       next.d = 1;
       next.addMonth();
-      double xnext = (next - content.earliest) * context.day_width;
+      double xnext = (next - content.earliest) * config.backupIndicatorWidth;
       auto t = new Render::Text(context, "",
                                 config.colorGraphForeground);
       cleanup(t);
@@ -251,7 +253,7 @@ void TimeLabels::set_extent() {
         t->set_text(d.format(formats[format]));
         t->set_extent();
         // At the right hand edge, push back so it fits
-        x = std::min((d - content.earliest) * context.day_width,
+        x = std::min((d - content.earliest) * config.backupIndicatorWidth,
                      content.width - t->width);
         // If it fits, use it
         if(x >= limit && x + t->width < xnext)
@@ -281,7 +283,7 @@ HistoryGraph::HistoryGraph(HistoryGraphContext &ctx):
   add(&content, 2, 0);
   add(&time_labels, 2, 1);
   add(&device_key, 2, 3, 1, 0);
-  set_padding(ctx.xpad, ctx.ypad);
+  set_padding(config.horizontalPadding, config.verticalPadding);
 }
 
 void HistoryGraph::set_extent() {
@@ -291,7 +293,7 @@ void HistoryGraph::set_extent() {
   //time_labels.set_extent();
   double row_height = std::max({host_labels.get_maximum_height(),
         volume_labels.get_maximum_height(),
-        (context.device_indicator_height
+        (config.backupIndicatorHeight
          * config.devices.size())});
   double indicator_height = floor(row_height / config.devices.size());
   device_key.set_indicator_height(indicator_height);

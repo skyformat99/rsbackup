@@ -198,22 +198,6 @@ struct HistoryGraphContext: public Render::Context {
   /** @brief Constructor */
   HistoryGraphContext();
 
-  /** @brief Horizontal padding */
-  double xpad = 8;
-
-  /** @brief Vertical padding */
-  double ypad = 2;
-
-  /** @brief Width of a single day */
-  double day_width = 4;
-
-  /** @brief Minimum height of the rectangle for a backup
-   */
-  double device_indicator_height = 2;
-
-  /** @brief Width of a the rectangle in a @ref DeviceKey */
-  double device_key_indicator_width = 16;
-
   /** @brief Color picking strategy */
   const ColorStrategy *color_strategy;
 
