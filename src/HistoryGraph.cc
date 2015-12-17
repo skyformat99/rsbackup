@@ -77,13 +77,21 @@ DeviceKey::DeviceKey(HistoryGraphContext &ctx):
     add(t, 0, row);
     auto r = new Render::Rectangle(ctx,
                                    ctx.device_key_indicator_width,
-                                   ctx.device_indicator_height,
+                                   indicator_height,
                                    device_color(row));
+    rectangles.push_back(r);
     cleanup(r);
     add(r, 1, row, -1, 0);
     ++row;
   }
   set_padding(ctx.xpad, ctx.ypad);
+}
+
+void DeviceKey::set_indicator_height(double h) {
+  indicator_height = h;
+  for(auto r: rectangles)
+    r->set_size(-1,
+                indicator_height);
 }
 
 const Color DeviceKey::device_color(unsigned row) const {
@@ -175,9 +183,9 @@ void HistoryGraphContent::render_horizontal_guides() {
 
 void HistoryGraphContent::render_data() {
   double y = 0;
-  double base = floor((row_height
-                       - (context.device_indicator_height
-                          * config.devices.size())) / 2);
+  double base = floor((row_height + context.ypad - 1
+                       - (indicator_height
+                          * config.devices.size())) / 2) + 1;
   for(auto host_iterator: config.hosts) {
     Host *host = host_iterator.second;
     if(!host->selected())
@@ -190,11 +198,11 @@ void HistoryGraphContent::render_data() {
         if(backup->getStatus() == COMPLETE) {
           double x = (backup->date - earliest) * context.day_width;
           auto device_row = device_key.device_row(backup);
-          double offset = base + device_row * context.device_indicator_height;
+          double offset = base + device_row * indicator_height;
           set_source_color(device_key.device_color(backup));
           context.cairo->rectangle(x, y + offset,
                                    context.day_width,
-                                   context.device_indicator_height);
+                                   indicator_height);
           context.cairo->fill();
         }
       }
@@ -285,6 +293,9 @@ void HistoryGraph::set_extent() {
         volume_labels.get_maximum_height(),
         (context.device_indicator_height
          * config.devices.size())});
+  double indicator_height = floor(row_height / config.devices.size());
+  device_key.set_indicator_height(indicator_height);
+  content.set_indicator_height(indicator_height);
   host_labels.set_minimum(0, row_height);
   volume_labels.set_minimum(0, row_height);
   content.set_row_height(row_height);
@@ -300,5 +311,6 @@ void HistoryGraph::render() {
 }
 
 HistoryGraphContext::HistoryGraphContext() {
-  color_strategy = ColorStrategy::find("equidistant-hue");
+  //color_strategy = ColorStrategy::find("equidistant-hue");
+  color_strategy = ColorStrategy::find("equidistant-value");
 }

@@ -69,12 +69,19 @@ public:
     return device_color(device_row(backup));
   }
 
+  void set_indicator_height(double h);
+
 private:
   /** @brief Configuration context */
   HistoryGraphContext &context;
 
   /** @brief Mapping of device names to device rows */
   std::map<std::string,unsigned> device_rows;
+
+  std::list<Render::Rectangle *> rectangles;
+
+  /** @brief Height of device indicator rectangle */
+  double indicator_height = 1;
 };
 
 /** @brief Visualization of backup history */
@@ -113,6 +120,10 @@ public:
   /** @brief Latest date of any backup */
   Date latest;
 
+  void set_indicator_height(double h) {
+    indicator_height = h;
+  }
+
 private:
   /** @brief Height of a single row
    *
@@ -128,6 +139,9 @@ private:
 
   /** @brief Number of rows */
   unsigned rows;
+
+  /** @brief Height of device indicator rectangle */
+  double indicator_height = 1;
 };
 
 /** @brief Time-axis labels */
@@ -193,7 +207,8 @@ struct HistoryGraphContext: public Render::Context {
   /** @brief Width of a single day */
   double day_width = 4;
 
-  /** @brief Height of the rectangle for a backup */
+  /** @brief Minimum height of the rectangle for a backup
+   */
   double device_indicator_height = 2;
 
   /** @brief Width of a the rectangle in a @ref DeviceKey */

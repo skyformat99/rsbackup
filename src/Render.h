@@ -318,6 +318,13 @@ namespace Render {
       height = h;
     }
 
+    void set_size(double w, double h) {
+      if(w > 0)
+        width = w;
+      if(h > 0)
+        height = h;
+    }
+
     void set_extent() override;
     void render() override;
 
