@@ -722,11 +722,6 @@ void Conf::write(std::ostream &os, int step, bool verbose) const {
     os << indent(step) << "lock " << quote(lock) << '\n';
   d(os, "", step);
 
-  d(os, "# Path to mail transport agent", step);
-  d(os, "#  sendmail PATH", step);
-  os << indent(step) << "sendmail " << quote(sendmail) << '\n';
-  d(os, "", step);
-
   d(os, "# Command to run before accessing backup devices", step);
   d(os, "#  pre-access-hook COMMAND ...", step);
   if(preAccess.size())
@@ -739,11 +734,13 @@ void Conf::write(std::ostream &os, int step, bool verbose) const {
     os << indent(step) << "post-access-hook " << quote(postAccess) << '\n';
   d(os, "", step);
 
-  d(os, "# Stylesheet for HTML report", step);
-  d(os, "#  stylesheet PATH", step);
-  if(stylesheet.size())
-    os << indent(step) << "stylesheet " << quote(stylesheet) << '\n';
+  d(os, "# Names of backup devices", step);
+  d(os, "#  device NAME", step);
+  for(auto &d: devices)
+    os << "device " << quote(d.first) << '\n';
   d(os, "", step);
+
+  d(os, "# ---- Reporting ----", step);
 
   d(os, "# 'Good' and 'bad' colors for HTML report", step);
   d(os, "#  color-good 0xRRGGBB", step);
@@ -758,11 +755,23 @@ void Conf::write(std::ostream &os, int step, bool verbose) const {
      << std::dec;
   d(os, "", step);
 
-  d(os, "# Names of backup devices", step);
-  d(os, "#  device NAME", step);
-  for(auto &d: devices)
-    os << "device " << quote(d.first) << '\n';
+  d(os, "# How many days worth of pruning logs to report", step);
+  d(os, "#  report-prune-logs DAYS", step);
+  os << indent(step) << "report-prune-logs " << reportPruneLogs << '\n';
   d(os, "", step);
+
+  d(os, "# Path to mail transport agent", step);
+  d(os, "#  sendmail PATH", step);
+  os << indent(step) << "sendmail " << quote(sendmail) << '\n';
+  d(os, "", step);
+
+  d(os, "# Stylesheet for HTML report", step);
+  d(os, "#  stylesheet PATH", step);
+  if(stylesheet.size())
+    os << indent(step) << "stylesheet " << quote(stylesheet) << '\n';
+  d(os, "", step);
+
+  d(os, "# ---- Graphs ----", step);
 
   d(os, "# ---- Hosts to back up ----", step);
 

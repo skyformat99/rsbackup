@@ -3,9 +3,10 @@ prune-policy age
 ssh-timeout 60
 public false
 logs /var/log/backup
-sendmail /usr/sbin/sendmail
 color-good 0xe0ffe0
 color-bad 0xff4040
+report-prune-logs 3
+sendmail /usr/sbin/sendmail
 
 host a
     max-age 3
