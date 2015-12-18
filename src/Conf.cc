@@ -28,7 +28,6 @@
 #include <cstring>
 #include <cstdlib>
 #include <glob.h>
-#include <iomanip>
 #include <regex>
 #include <boost/filesystem.hpp>
 
@@ -741,18 +740,13 @@ void Conf::write(std::ostream &os, int step, bool verbose) const {
   d(os, "", step);
 
   d(os, "# ---- Reporting ----", step);
+  d(os, "", step);
 
   d(os, "# 'Good' and 'bad' colors for HTML report", step);
   d(os, "#  color-good 0xRRGGBB", step);
   d(os, "#  color-bad 0xRRGGBB", step);
-  os << indent(step) << "color-good "
-     << std::hex
-     << "0x" << std::setw(6) << std::setfill('0') << static_cast<unsigned>(colorGood)
-     << '\n'
-     << indent(step) << "color-bad "
-     << "0x" << std::setw(6) << std::setfill('0') << static_cast<unsigned>(colorBad)
-     << '\n'
-     << std::dec;
+  os << indent(step) << "color-good 0x" << colorGood << '\n'
+     << indent(step) << "color-bad 0x" << colorBad << '\n';
   d(os, "", step);
 
   d(os, "# How many days worth of pruning logs to report", step);
@@ -772,6 +766,7 @@ void Conf::write(std::ostream &os, int step, bool verbose) const {
   d(os, "", step);
 
   d(os, "# ---- Graphs ----", step);
+  d(os, "", step);
 
   d(os, "# ---- Hosts to back up ----", step);
 

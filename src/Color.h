@@ -84,6 +84,14 @@ private:
   }
 };
 
+/** @brief Output a color
+ * @param os Output stream
+ * @param c Color
+ *
+ * Output @p c as a 6-digit hex valuee.
+ */
+std::ostream &operator<<(std::ostream &os, const Color &c);
+
 /** @brief A strategy for picking a small set of distinct colors */
 class ColorStrategy {
 public:

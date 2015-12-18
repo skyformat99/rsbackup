@@ -15,6 +15,8 @@
 #include <config.h>
 #include "Color.h"
 #include <cmath>
+#include <iomanip>
+#include <ostream>
 
 Color Color::HSV(double h, double s, double v) {
   // https://en.wikipedia.org/wiki/HSL_and_HSV#Converting_to_RGB
@@ -31,4 +33,11 @@ Color Color::HSV(double h, double s, double v) {
   else { r1 = c; g1 = 0; b1 = x; }
   double m = v - c;
   return Color(r1+m, g1+m, b1+m);
+}
+
+std::ostream &operator<<(std::ostream &os, const Color &c) {
+  os << std::hex << std::setw(6) << std::setfill('0')
+     << static_cast<unsigned>(c)
+     << std::dec;
+  return os;
 }
