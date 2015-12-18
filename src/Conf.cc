@@ -768,6 +768,41 @@ void Conf::write(std::ostream &os, int step, bool verbose) const {
   d(os, "# ---- Graphs ----", step);
   d(os, "", step);
 
+  d(os, "# Graph background color", step);
+  d(os, "#  color-graph-background 0xRRGGBB", step);
+  os << indent(step) << "color-graph-background 0x" << colorGraphBackground << '\n';
+  d(os, "", step);
+
+  d(os, "# Graph foreground color", step);
+  d(os, "#  color-graph-foreground 0xRRGGBB", step);
+  os << indent(step) << "color-graph-foreground 0x" << colorGraphForeground << '\n';
+  d(os, "", step);
+
+  d(os, "# Graph month guide color", step);
+  d(os, "#  color-month-guide 0xRRGGBB", step);
+  os << indent(step) << "color-month-guide 0x" << colorMonthGuide << '\n';
+  d(os, "", step);
+
+  d(os, "# Graph host guide color", step);
+  d(os, "#  color-host-guide 0xRRGGBB", step);
+  os << indent(step) << "color-host-guide 0x" << colorHostGuide << '\n';
+  d(os, "", step);
+
+  d(os, "# Graph volume guide color", step);
+  d(os, "#  color-volume-guide 0xRRGGBB", step);
+  os << indent(step) << "color-volume-guide 0x" << colorVolumeGuide << '\n';
+  d(os, "", step);
+
+  d(os, "# Graph horizontal padding", step);
+  d(os, "#  horizontal-padding PIXELS", step);
+  os << indent(step) << "horizontal-padding " << horizontalPadding << '\n';
+  d(os, "", step);
+
+  d(os, "# Graph vertical padding", step);
+  d(os, "#  vertical-padding PIXELS", step);
+  os << indent(step) << "vertical-padding " << verticalPadding << '\n';
+  d(os, "", step);
+
   d(os, "# ---- Hosts to back up ----", step);
 
   for(auto &h: hosts) {
