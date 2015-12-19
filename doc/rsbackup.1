@@ -360,14 +360,20 @@ Colors are picked with chosen hue and saturation, with values equally spaced wit
 .IP
 The default hue is 0 and the default saturation is 1.
 The default value range is from 0 to 1.
-.IP
-This is the default strategy.
 .TP
 .B equidistant-hue \fIHUE SATURATION VALUE
 Colors are picked with chosen saturation and value and equally spaced hues,
 starting from \fIHUE\fR.
 .IP
 The default starting hue is 0 and the default saturation and value are 1.
+.RE
+.PP
+The default strategy is equivalent to:
+.RS
+.nf
+
+device-color-strategy equidistant-value 120 0.75
+.fi
 .RE
 .TP
 .B horizontal-padding \fIPIXELS

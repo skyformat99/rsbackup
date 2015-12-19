@@ -107,7 +107,7 @@ ColorStrategy *ColorStrategy::create(const std::string &name,
     return new EquidistantHue(h, s, v);
   }
   if(name == "equidistant-value") {
-    double h = 0, s = 0, minv = 0, maxv = 1;
+    double h = 0, s = 1, minv = 0, maxv = 1;
     if(pos < params.size()) h = parseFloat(params[pos++]);
     if(pos < params.size()) s = parseFloat(params[pos++], 0, 1);
     if(pos < params.size()) minv = parseFloat(params[pos++], 0, 1);

@@ -719,6 +719,8 @@ static const struct CheckMountedDirective: public VolumeOnlyDirective {
 
 Conf::Conf() {
   std::vector<std::string> args;
+  args.push_back("120");
+  args.push_back("0.75");
   deviceColorStrategy = ColorStrategy::create(DEFAULT_COLOR_STRATEGY, args);
 }
 
