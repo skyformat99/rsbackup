@@ -193,7 +193,6 @@ struct ColorDirective: public Directive {
   void check(const ConfContext &cc) const override {
     int args = cc.bits.size() - 1;
     Directive::check(cc);
-    printf("%d\n", args);
     if(args > 1 && args < 4)
       throw SyntaxError("wrong number of arguments to '" + name + "'");
     if(args == 4) {
@@ -480,9 +479,10 @@ static const struct VerticalPaddingDirective: public Directive {
 static const struct BackupIndicatorWidthDirective: public Directive {
   BackupIndicatorWidthDirective(): Directive("backup-indicator-width") {}
   void set(ConfContext &cc) const override {
-    cc.conf->backupIndicatorWidth = parseFloat(cc.bits[1],
-                                               std::numeric_limits<double>::min(),
-                                               std::numeric_limits<double>::max());
+    cc.conf->backupIndicatorWidth
+      = parseFloat(cc.bits[1],
+                   std::numeric_limits<double>::min(),
+                   std::numeric_limits<double>::max());
   }
 } backup_indicator_width_directive;
 
@@ -490,11 +490,23 @@ static const struct BackupIndicatorWidthDirective: public Directive {
 static const struct BackupIndicatorHeightDirective: public Directive {
   BackupIndicatorHeightDirective(): Directive("backup-indicator-height") {}
   void set(ConfContext &cc) const override {
-    cc.conf->backupIndicatorHeight = parseFloat(cc.bits[1],
-                                                std::numeric_limits<double>::min(),
-                                                std::numeric_limits<double>::max());
+    cc.conf->backupIndicatorHeight
+      = parseFloat(cc.bits[1],
+                   std::numeric_limits<double>::min(),
+                   std::numeric_limits<double>::max());
   }
 } backup_indicator_height_directive;
+
+/** @brief The backup-indicator-key-width directive */
+static const struct BackupIndicatorKeyWidthDirective: public Directive {
+  BackupIndicatorKeyWidthDirective(): Directive("backup-indicator-key-width") {}
+  void set(ConfContext &cc) const override {
+    cc.conf->backupIndicatorKeyWidth
+      = parseFloat(cc.bits[1],
+                   std::numeric_limits<double>::min(),
+                   std::numeric_limits<double>::max());
+  }
+} backup_indicator_key_width_directive;
 
 // Inheritable directives -----------------------------------------------------
 
@@ -819,15 +831,31 @@ void Conf::write(std::ostream &os, int step, bool verbose) const {
      << deviceColorStrategy->description() << '\n';
   d(os, "", step);
 
-  d(os, "# Graph horizontal padding", step);
+  d(os, "# Horizontal padding", step);
   d(os, "#  horizontal-padding PIXELS", step);
   os << indent(step) << "horizontal-padding " << horizontalPadding << '\n';
   d(os, "", step);
 
-  d(os, "# Graph vertical padding", step);
+  d(os, "# Vertical padding", step);
   d(os, "#  vertical-padding PIXELS", step);
   os << indent(step) << "vertical-padding " << verticalPadding << '\n';
   d(os, "", step);
+
+  d(os, "# Width of a backup indicator", step);
+  d(os, "#  backup-indicator-width PIXELS", step);
+  os << indent(step) << "backup-indicator-width " << backupIndicatorWidth << '\n';
+  d(os, "", step);
+
+  d(os, "# Minimum height of a backup indicator ", step);
+  d(os, "#  backup-indicator-height PIXELS", step);
+  os << indent(step) << "backup-indicator-height " << backupIndicatorHeight << '\n';
+  d(os, "", step);
+
+  d(os, "# Width of a backup indicator in the device key", step);
+  d(os, "#  backup-indicator-key-width PIXELS", step);
+  os << indent(step) << "backup-indicator-key-width " << backupIndicatorKeyWidth << '\n';
+  d(os, "", step);
+
 
   d(os, "# ---- Hosts to back up ----", step);
 

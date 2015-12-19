@@ -18,7 +18,6 @@
 #include "Utils.h"
 #include <cstdlib>
 #include <cerrno>
-#include <iostream>
 
 double parseFloat(const std::string &s,
                   double min, double max) {

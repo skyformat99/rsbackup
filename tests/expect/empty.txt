@@ -15,3 +15,6 @@ color-volume-guide 0xefefef
 device-color-strategy equidistant-value 0 0
 horizontal-padding 8
 vertical-padding 2
+backup-indicator-width 4
+backup-indicator-height 2
+backup-indicator-key-width 16
