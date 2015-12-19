@@ -116,7 +116,16 @@ public:
    */
   static const ColorStrategy *find(const std::string &name);
 
+  /** @brief Default color strategy */
+  static const ColorStrategy *const defaultStrategy;
+
+  /** @brief Get the description of this strategy */
+  virtual std::string description() const;
+
 private:
+  /** @brief Name of this strategy */
+  const char *name;
+
   /** @brief Type of color strategy registry */
   typedef std::map<std::string, ColorStrategy *> strategies_type;
 

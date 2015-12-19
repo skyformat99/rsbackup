@@ -16,14 +16,19 @@
 #include "Color.h"
 #include <cassert>
 
-ColorStrategy::ColorStrategy(const char *name) {
+ColorStrategy::ColorStrategy(const char *name): name(name) {
   if(!strategies)
     strategies = new strategies_type();
   (*strategies)[name] = this;
 }
 
+std::string ColorStrategy::description() const {
+  return name;
+}
+
 const ColorStrategy *ColorStrategy::find(const std::string &name) {
-  assert(strategies != nullptr);
+  if(strategies == nullptr)
+    throw std::logic_error("ColorStrategy::find");
   auto it = strategies->find(name);
   return it != strategies->end() ? it->second : nullptr;
 }
@@ -54,3 +59,5 @@ public:
 } equidistant_value;
 
 ColorStrategy::strategies_type *ColorStrategy::strategies;
+
+const ColorStrategy *const ColorStrategy::defaultStrategy = &equidistant_hue;

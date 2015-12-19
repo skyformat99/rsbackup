@@ -20,7 +20,7 @@
 #include <limits>
 #include <cassert>
 
-HostLabels::HostLabels(HistoryGraphContext &ctx): Render::Grid(ctx) {
+HostLabels::HostLabels(Render::Context &ctx): Render::Grid(ctx) {
   unsigned row = 0;
   if(config.hosts.size() == 0)
     throw std::runtime_error("no hosts found in configuration");
@@ -44,7 +44,7 @@ HostLabels::HostLabels(HistoryGraphContext &ctx): Render::Grid(ctx) {
   set_padding(config.horizontalPadding, config.verticalPadding);
 }
 
-VolumeLabels::VolumeLabels(HistoryGraphContext &ctx): Render::Grid(ctx) {
+VolumeLabels::VolumeLabels(Render::Context &ctx): Render::Grid(ctx) {
   unsigned row = 0;
   for(auto host_iterator: config.hosts) {
     Host *host = host_iterator.second;
@@ -64,9 +64,8 @@ VolumeLabels::VolumeLabels(HistoryGraphContext &ctx): Render::Grid(ctx) {
   set_padding(config.horizontalPadding, config.verticalPadding);
 }
 
-DeviceKey::DeviceKey(HistoryGraphContext &ctx):
-  Render::Grid(ctx),
-  context(ctx) {
+DeviceKey::DeviceKey(Render::Context &ctx):
+  Render::Grid(ctx) {
   unsigned row = 0;
   for(auto device_iterator: config.devices) {
     const auto &device = device_iterator.first;
@@ -101,15 +100,14 @@ const Color DeviceKey::device_color(unsigned row) const {
   if(context.colors.find(di) != context.colors.end())
     return context.colors[di];
   */
-  return context.color_strategy->get(row, config.devices.size());
+  return config.deviceColorStrategy->get(row, config.devices.size());
 }
 
-HistoryGraphContent::HistoryGraphContent(HistoryGraphContext &ctx,
+HistoryGraphContent::HistoryGraphContent(Render::Context &ctx,
                                          const DeviceKey &device_key):
   Render::Widget(ctx),
   earliest(INT_MAX, 1, 0),
   latest(0),
-  context(ctx),
   device_key(device_key),
   rows(0) {
   for(auto host_iterator: config.hosts) {
@@ -219,9 +217,8 @@ void HistoryGraphContent::render() {
   render_data();
 }
 
-TimeLabels::TimeLabels(HistoryGraphContext &ctx,
+TimeLabels::TimeLabels(Render::Context &ctx,
                        HistoryGraphContent &content): Render::Container(ctx),
-                                                      context(ctx),
                                                       content(content) {
 }
 
@@ -270,9 +267,8 @@ void TimeLabels::set_extent() {
   }
 }
 
-HistoryGraph::HistoryGraph(HistoryGraphContext &ctx):
+HistoryGraph::HistoryGraph(Render::Context &ctx):
   Render::Grid(ctx),
-  context(ctx),
   host_labels(ctx),
   volume_labels(ctx),
   device_key(ctx),
@@ -310,9 +306,4 @@ void HistoryGraph::render() {
   context.cairo->rectangle(0, 0, width, height);
   context.cairo->fill();
   Grid::render();
-}
-
-HistoryGraphContext::HistoryGraphContext() {
-  //color_strategy = ColorStrategy::find("equidistant-hue");
-  color_strategy = ColorStrategy::find("equidistant-value");
 }

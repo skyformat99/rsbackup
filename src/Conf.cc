@@ -405,7 +405,7 @@ static const struct IncludeDirective: public Directive {
   }
 } include_directive;
 
-/** @brief The graph-background directive */
+/** @brief The color-graph-background directive */
 static const struct ColorGraphBackgroundDirective: public ColorDirective {
   ColorGraphBackgroundDirective(): ColorDirective("color-graph-background") {}
   void set(ConfContext &cc, const Color &c) const override {
@@ -413,7 +413,7 @@ static const struct ColorGraphBackgroundDirective: public ColorDirective {
   }
 } color_graph_background_directive;
 
-/** @brief The graph-foreground directive */
+/** @brief The color-graph-foreground directive */
 static const struct ColorGraphForegroundDirective: public ColorDirective {
   ColorGraphForegroundDirective(): ColorDirective("color-graph-foreground") {}
   void set(ConfContext &cc, const Color &c) const override {
@@ -421,7 +421,7 @@ static const struct ColorGraphForegroundDirective: public ColorDirective {
   }
 } color_graph_foreground_directive;
 
-/** @brief The month-guide directive */
+/** @brief The color-month-guide directive */
 static const struct ColorMonthGuideDirective: public ColorDirective {
   ColorMonthGuideDirective(): ColorDirective("color-month-guide") {}
   void set(ConfContext &cc, const Color &c) const override {
@@ -429,7 +429,7 @@ static const struct ColorMonthGuideDirective: public ColorDirective {
   }
 } color_month_guide_directive;
 
-/** @brief The host-guide directive */
+/** @brief The color-host-guide directive */
 static const struct ColorHostGuideDirective: public ColorDirective {
   ColorHostGuideDirective(): ColorDirective("color-host-guide") {}
   void set(ConfContext &cc, const Color &c) const override {
@@ -437,13 +437,24 @@ static const struct ColorHostGuideDirective: public ColorDirective {
   }
 } color_host_guide_directive;
 
-/** @brief The volume-guide directive */
+/** @brief The color-volume-guide directive */
 static const struct ColorVolumeGuideDirective: public ColorDirective {
   ColorVolumeGuideDirective(): ColorDirective("color-volume-guide") {}
   void set(ConfContext &cc, const Color &c) const override {
     cc.conf->colorVolumeGuide = c;
   }
 } color_volume_guide_directive;
+
+/** @brief The device-color-strategy directive */
+static const struct DeviceColorStrategyDirective: public Directive {
+  DeviceColorStrategyDirective(): Directive("device-color-strategy", 1, 1) {}
+  void set(ConfContext &cc) const override {
+    const ColorStrategy *c = ColorStrategy::find(cc.bits[1]);
+    if(!c)
+      throw SyntaxError("invalid color strategy");
+    cc.conf->deviceColorStrategy = c;
+  }
+} device_color_strategy_directive;
 
 /** @brief The horizontal-padding directive */
 static const struct HorizontalPaddingDirective: public Directive {
@@ -791,6 +802,12 @@ void Conf::write(std::ostream &os, int step, bool verbose) const {
   d(os, "# Graph volume guide color", step);
   d(os, "#  color-volume-guide 0xRRGGBB", step);
   os << indent(step) << "color-volume-guide 0x" << colorVolumeGuide << '\n';
+  d(os, "", step);
+
+  d(os, "# Strategy for picking device colors", step);
+  d(os, "#  device-color-strategy NAME", step);
+  os << indent(step) << "device-color-strategy "
+     << deviceColorStrategy->description() << '\n';
   d(os, "", step);
 
   d(os, "# Graph horizontal padding", step);

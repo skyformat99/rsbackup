@@ -19,33 +19,31 @@
 #include "Render.h"
 #include "Conf.h"
 
-struct HistoryGraphContext;
-
 /** @brief Host name labels */
 class HostLabels: public Render::Grid {
 public:
   /** @brief Constructor
-   * @param ctx Configuration context
+   * @param ctx Rendering context
    */
-  HostLabels(HistoryGraphContext &ctx);
+  HostLabels(Render::Context &ctx);
 };
 
 /** @brief Volume name labels */
 class VolumeLabels: public Render::Grid {
 public:
   /** @brief Constructor
-   * @param ctx Configuration context
+   * @param ctx Rendering context
    */
-  VolumeLabels(HistoryGraphContext &ctx);
+  VolumeLabels(Render::Context &ctx);
 };
 
 /** @brief Key showing mapping of device names to colors */
 class DeviceKey: public Render::Grid {
 public:
   /** @brief Constructor
-   * @param ctx Configuration context
+   * @param ctx Rendering context
    */
-  DeviceKey(HistoryGraphContext &ctx);
+  DeviceKey(Render::Context &ctx);
 
   /** @brief Return the device row number for a backup
    * @param backup Backup
@@ -72,9 +70,6 @@ public:
   void set_indicator_height(double h);
 
 private:
-  /** @brief Configuration context */
-  HistoryGraphContext &context;
-
   /** @brief Mapping of device names to device rows */
   std::map<std::string,unsigned> device_rows;
 
@@ -88,10 +83,10 @@ private:
 class HistoryGraphContent: public Render:: Widget {
 public:
   /** @brief Constructor
-   * @param ctx Configuration context
+   * @param ctx Rendering context
    * @param device_key Corresponding @ref DeviceKey structure
    */
-  HistoryGraphContent(HistoryGraphContext &ctx,
+  HistoryGraphContent(Render::Context &ctx,
                       const DeviceKey &device_key);
 
   /** @brief Set the rot height
@@ -131,9 +126,6 @@ private:
    */
   double row_height = 0;
 
-  /** @brief Configuration context */
-  HistoryGraphContext &context;
-
   /** @brief Corresponding @ref DeviceKey object */
   const DeviceKey &device_key;
 
@@ -148,17 +140,14 @@ private:
 class TimeLabels: public Render::Container {
 public:
   /** @brief Constructor
-   * @param ctx Configuration context
+   * @param ctx Rendering context
    * @param content Corresponding @ref HistoryGraphContent object
    */
-  TimeLabels(HistoryGraphContext &ctx,
+  TimeLabels(Render::Context &ctx,
              HistoryGraphContent &content);
 
   void set_extent() override;
 private:
-  /** @brief Configuration context */
-  HistoryGraphContext &context;
-
   /** @brief Corresponding @ref HistoryGraphContent object */
   HistoryGraphContent &content;
 };
@@ -167,12 +156,9 @@ private:
 class HistoryGraph: public Render::Grid {
 public:
   /** @brief Constructor
-   * @param ctx Configuration context
+   * @param ctx Rendering context
    */
-  HistoryGraph(HistoryGraphContext &ctx);
-
-  /** @brief Configuration context */
-  HistoryGraphContext &context;
+  HistoryGraph(Render::Context &ctx);
 
   /** @brief Host name labels */
   HostLabels host_labels;
@@ -191,16 +177,6 @@ public:
 
   void set_extent() override;
   void render() override;
-};
-
-/** @brief Configuration context for @ref HistoryGraph */
-struct HistoryGraphContext: public Render::Context {
-  /** @brief Constructor */
-  HistoryGraphContext();
-
-  /** @brief Color picking strategy */
-  const ColorStrategy *color_strategy;
-
 };
 
 #endif /* HISTORYGRAPH_H */

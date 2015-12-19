@@ -277,6 +277,9 @@ public:
   /** @brief Backup indicator width in the device key */
   double backupIndicatorKeyWidth = 16;
 
+  /** @brief Strategy for picking device colors */
+  const ColorStrategy *deviceColorStrategy = ColorStrategy::defaultStrategy;
+
   /** @brief Read the master configuration file
    * @throws IOError if a file cannot be read
    * @throws ConfigError if the contents of a file are malformed

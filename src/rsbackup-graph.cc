@@ -104,9 +104,8 @@ int main(int argc, char **argv) {
     // How you're supposed to know about this I've not discovered.
     Pango::init();
 
-    // Configuration
-    // TODO make actually configurable
-    HistoryGraphContext context;
+    // Rendering context
+    Render::Context context;
 
     // The graph
     HistoryGraph graph(context);
