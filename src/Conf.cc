@@ -447,12 +447,12 @@ static const struct ColorVolumeGuideDirective: public ColorDirective {
 
 /** @brief The device-color-strategy directive */
 static const struct DeviceColorStrategyDirective: public Directive {
-  DeviceColorStrategyDirective(): Directive("device-color-strategy", 1, 1) {}
+  DeviceColorStrategyDirective(): Directive("device-color-strategy",
+                                            1, INT_MAX) {}
   void set(ConfContext &cc) const override {
-    const ColorStrategy *c = ColorStrategy::find(cc.bits[1]);
-    if(!c)
-      throw SyntaxError("invalid color strategy");
-    cc.conf->deviceColorStrategy = c;
+    ColorStrategy *nc = ColorStrategy::create(cc.bits[1], cc.bits, 2);
+    delete cc.conf->deviceColorStrategy;
+    cc.conf->deviceColorStrategy = nc;
   }
 } device_color_strategy_directive;
 
@@ -705,6 +705,11 @@ static const struct CheckMountedDirective: public VolumeOnlyDirective {
   }
 } check_mounted_directive;
 
+Conf::Conf() {
+  std::vector<std::string> args;
+  deviceColorStrategy = ColorStrategy::create(DEFAULT_COLOR_STRATEGY, args);
+}
+
 void Conf::write(std::ostream &os, int step, bool verbose) const {
   describe_type *d = verbose ? describe : nodescribe;
 
@@ -805,7 +810,11 @@ void Conf::write(std::ostream &os, int step, bool verbose) const {
   d(os, "", step);
 
   d(os, "# Strategy for picking device colors", step);
-  d(os, "#  device-color-strategy NAME", step);
+  d(os, "#  device-color-strategy equidistant-value HUE", step);
+  d(os, "#  device-color-strategy equidistant-value HUE SATURATION", step);
+  d(os, "#  device-color-strategy equidistant-value HUE SATURATION MINVALUE MAXVALUE", step);
+  d(os, "#  device-color-strategy equidistant-hue HUE", step);
+  d(os, "#  device-color-strategy equidistant-hue HUE SATURATION VALUE", step);
   os << indent(step) << "device-color-strategy "
      << deviceColorStrategy->description() << '\n';
   d(os, "", step);

@@ -15,7 +15,7 @@ color-graph-foreground 0x000000
 color-month-guide 0xf7f7f7
 color-host-guide 0xdfdfdf
 color-volume-guide 0xefefef
-device-color-strategy equidistant-hue
+device-color-strategy equidistant-value 0 0
 horizontal-padding 8
 vertical-padding 2
 

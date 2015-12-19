@@ -18,6 +18,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 
 /** @brief An RGB color */
 struct Color {
@@ -110,27 +111,16 @@ public:
    */
   virtual Color get(unsigned n, unsigned items) const = 0;
 
-  /** @brief Find a color strategy by name
-   * @param name Name of strategy
-   * @return Pointer to strategy
-   */
-  static const ColorStrategy *find(const std::string &name);
-
-  /** @brief Default color strategy */
-  static const ColorStrategy *const defaultStrategy;
-
   /** @brief Get the description of this strategy */
   virtual std::string description() const;
 
-private:
+  static ColorStrategy *create(const std::string &name,
+                               std::vector<std::string> &params,
+                               size_t pos = 0);
+
+protected:
   /** @brief Name of this strategy */
   const char *name;
-
-  /** @brief Type of color strategy registry */
-  typedef std::map<std::string, ColorStrategy *> strategies_type;
-
-  /** @brief Color strategy registry */
-  static strategies_type *strategies;
 };
 
 #endif /* COLOR_H */

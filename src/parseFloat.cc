@@ -18,9 +18,10 @@
 #include "Utils.h"
 #include <cstdlib>
 #include <cerrno>
+#include <iostream>
 
-int parseFloat(const std::string &s,
-               double min, double max) {
+double parseFloat(const std::string &s,
+                  double min, double max) {
   errno = 0;
   const char *sc = s.c_str();
   char *e;

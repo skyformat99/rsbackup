@@ -14,50 +14,111 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <config.h>
 #include "Color.h"
+#include "Utils.h"
+#include "Errors.h"
 #include <cassert>
+#include <sstream>
+#include <cmath>
 
 ColorStrategy::ColorStrategy(const char *name): name(name) {
-  if(!strategies)
-    strategies = new strategies_type();
-  (*strategies)[name] = this;
 }
 
 std::string ColorStrategy::description() const {
   return name;
 }
 
-const ColorStrategy *ColorStrategy::find(const std::string &name) {
-  if(strategies == nullptr)
-    throw std::logic_error("ColorStrategy::find");
-  auto it = strategies->find(name);
-  return it != strategies->end() ? it->second : nullptr;
-}
-
 /** @brief A color strategy that maximizes distance between hues */
-static class EquidistantHue: public ColorStrategy {
+class EquidistantHue: public ColorStrategy {
 public:
-  EquidistantHue(): ColorStrategy("equidistant-hue") {
+  /** @brief Constructor
+   * @param h Starting hue
+   */
+  EquidistantHue(double h, double s, double v):
+    ColorStrategy("equidistant-hue"),
+    hue(fmod(h, 360)),
+    saturation(s),
+    value(v) {
   }
 
   Color get(unsigned n, unsigned items) const override {
-    double h = 360.0 * n / items;
-    return Color::HSV(h, 1, 1);
+    double h = hue + 360.0 * n / items;
+    return Color::HSV(h, saturation, value);
   }
-} equidistant_hue;
+
+  std::string description() const override {
+    std::stringstream ss;
+    ss << name << ' ' << hue << ' ' << saturation << ' ' << value;
+    return ss.str();
+  }
+
+  double hue;
+  double saturation;
+  double value;
+};
 
 /** @brief A color strategy that maximizes distance between values */
-static class EquidistantValue: public ColorStrategy {
+class EquidistantValue: public ColorStrategy {
 public:
-  EquidistantValue(): ColorStrategy("equidistant-value") {
+  /** @brief Constructor
+   * @param h Base hue
+   * @param s Saturation
+   * @param minv Minimum value
+   * @param maxv Maximum value
+   */
+  EquidistantValue(double h, double s, double minv = 0, double maxv = 1):
+    ColorStrategy("equidistant-value"),
+    hue(fmod(h, 360)),
+    saturation(s),
+    minvalue(minv),
+    maxvalue(maxv) {
   }
 
   Color get(unsigned n, unsigned items) const override {
-    double v = static_cast<double>(n) / (items-1);
-    double h = 0;                       // TODO should be configurable
-    return Color::HSV(h, 1, v);
+    double value = minvalue
+      + static_cast<double>(n) / (items-1) * (maxvalue - minvalue);
+    return Color::HSV(hue, saturation, value);
   }
-} equidistant_value;
 
-ColorStrategy::strategies_type *ColorStrategy::strategies;
+  std::string description() const override {
+    std::stringstream ss;
+    ss << name << ' ' << hue << ' ' << saturation;
+    if(minvalue != 0 || maxvalue != 1)
+      ss << ' ' << minvalue << ' ' << maxvalue;
+    return ss.str();
+  }
 
-const ColorStrategy *const ColorStrategy::defaultStrategy = &equidistant_hue;
+  double hue;
+  double saturation;
+  double minvalue;
+  double maxvalue;
+};
+
+ColorStrategy *ColorStrategy::create(const std::string &name,
+                                     std::vector<std::string> &params,
+                                     size_t pos) {
+  if(name == "equidistant-hue") {
+    double h = 0, s = 1, v = 1;
+    if(pos < params.size()) h = parseFloat(params[pos++]);
+    if(pos < params.size()) s = parseFloat(params[pos++], 0, 1);
+    if(pos < params.size()) v = parseFloat(params[pos++], 0, 1);
+    if(pos < params.size())
+      throw SyntaxError("too many parameters for color strategy '"
+                        + name + "'");
+    return new EquidistantHue(h, s, v);
+  }
+  if(name == "equidistant-value") {
+    double h = 0, s = 0, minv = 0, maxv = 1;
+    if(pos < params.size()) h = parseFloat(params[pos++]);
+    if(pos < params.size()) s = parseFloat(params[pos++], 0, 1);
+    if(pos < params.size()) minv = parseFloat(params[pos++], 0, 1);
+    if(pos < params.size()) maxv = parseFloat(params[pos++], 0, 1);
+    if(minv >= maxv)
+      throw SyntaxError("inconsistent parameters for color strategy '"
+                        + name + "'");
+    if(pos < params.size())
+      throw SyntaxError("too many parameters for color strategy '"
+                        + name + "'");
+    return new EquidistantValue(h, s, minv, maxv);
+  }
+  throw SyntaxError("unrecognized color strategy '" + name + "'");
+}

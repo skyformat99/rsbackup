@@ -95,9 +95,9 @@ int parseInteger(const std::string &s,
  * @throws SyntaxError if the @p s doesn't represent a number
  * @throws SyntaxError if the value is out of range
  */
-int parseFloat(const std::string &s,
-               double min = -std::numeric_limits<double>::max(),
-               double max = std::numeric_limits<double>::max());
+double parseFloat(const std::string &s,
+                  double min = -std::numeric_limits<double>::max(),
+                  double max = std::numeric_limits<double>::max());
 
 /** @brief Split and parse a list represented as a string
  * @param bits Destination for components of the string

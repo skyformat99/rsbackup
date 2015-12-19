@@ -190,6 +190,9 @@ typedef std::map<std::string, Device *> devices_type;
 /** @brief Represents the entire configuration of rsbackup. */
 class Conf: public ConfBase {
 public:
+  /** @brief Constructor */
+  Conf();
+
   /** @brief Map of host names to configuration */
   hosts_type hosts;
 
@@ -278,7 +281,7 @@ public:
   double backupIndicatorKeyWidth = 16;
 
   /** @brief Strategy for picking device colors */
-  const ColorStrategy *deviceColorStrategy = ColorStrategy::defaultStrategy;
+  const ColorStrategy *deviceColorStrategy = nullptr;
 
   /** @brief Read the master configuration file
    * @throws IOError if a file cannot be read
